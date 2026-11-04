@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: echo
+      POSTGRES_PASSWORD: echo
+      POSTGRES_DB: echo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U echo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 1; done;
+      mc mb --ignore-existing local/echo_dev;
+      exit 0;
+      "
+
+  api:
+    build: .
+    ports:
+      - "3333:3333"
+    environment:
+      NODE_ENV: development
+      PORT: 3333
+      CLIENT_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgres://echo:echo@postgres:5432/echo
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-secret
+      JWT_EXPIRES_IN: 1h
+      JWT_REFRESH_EXPIRES_IN: 7d
+      STORAGE_TYPE: s3
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_BUCKET: echo_dev
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
