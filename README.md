@@ -105,6 +105,18 @@ Serviços expostos:
 | PostgreSQL | `postgres://echo:echo@localhost:5432/echo` |
 | Redis | `localhost:6379` |
 
+### Smoke test end-to-end
+
+Com o stack completo no ar, rode:
+
+```bash
+./scripts/e2e.sh
+```
+
+O script cria um usuário, faz upload de um WAV de 1s, cria a mídia, espera a
+transcrição, solicita o resumo e valida o resultado persistido. Requer `curl` e
+`python3`; use `BASE_URL` para apontar para outra API.
+
 ## Scripts
 
 | Script | Descrição |
