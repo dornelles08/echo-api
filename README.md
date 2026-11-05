@@ -74,6 +74,37 @@ pnpm build        # gera dist/server.js
 pnpm start        # executa o build
 ```
 
+### Stack completo com Docker
+
+O `docker-compose.yml` também sobe a API e aplica migrations/seeds automaticamente:
+
+```bash
+docker compose up -d --build
+```
+
+Para subir também o worker (`echo-worker`) e o frontend (`echo-web`), clone os três
+repositórios como diretórios irmãos e use o profile `full`:
+
+```bash
+docker compose --profile full up -d --build
+```
+
+O compose espera `../echo-worker` e `../echo-web`; use `ECHO_WORKER_PATH` e
+`ECHO_WEB_PATH` para apontar para outros caminhos. Nesse profile o worker roda com
+`WHISPER_MODE=fake` e `SUMMARY_MODE=fake`, o que permite testar o fluxo completo
+sem baixar modelos nem usar a OpenAI.
+
+Serviços expostos:
+
+| Serviço | URL |
+| --- | --- |
+| API | http://localhost:3333 |
+| Web | http://localhost:3000 |
+| MinIO API | http://localhost:9000 |
+| MinIO Console | http://localhost:9001 (`minioadmin` / `minioadmin`) |
+| PostgreSQL | `postgres://echo:echo@localhost:5432/echo` |
+| Redis | `localhost:6379` |
+
 ## Scripts
 
 | Script | Descrição |

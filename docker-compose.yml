@@ -21,6 +21,11 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   minio:
     image: minio/minio
@@ -33,17 +38,34 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   createbuckets:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_started
     entrypoint: >
       /bin/sh -c "
       until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 1; done;
       mc mb --ignore-existing local/echo_dev;
       exit 0;
       "
+
+  migrate:
+    build:
+      context: .
+      target: build
+    command: sh -c "pnpm db:migrate && pnpm db:seed"
+    environment:
+      DATABASE_URL: postgres://echo:echo@postgres:5432/echo
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   api:
     build: .
@@ -69,9 +91,52 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       minio:
         condition: service_started
+      createbuckets:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
+
+  # Full development stack. Requires echo-worker and echo-web checked out as
+  # siblings (override with ECHO_WORKER_PATH / ECHO_WEB_PATH):
+  #
+  #   docker compose --profile full up -d --build
+  worker:
+    profiles: ["full"]
+    build:
+      context: ${ECHO_WORKER_PATH:-../echo-worker}
+    environment:
+      WORKER_ENV: dev
+      DATABASE_URL: postgres://echo:echo@postgres:5432/echo
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WHISPER_MODE: fake
+      SUMMARY_MODE: fake
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_ACCESS_KEY: minioadmin
+      STORAGE_SECRET_KEY: minioadmin
+      STORAGE_BUCKET: echo_dev
+      STORAGE_REGION: us-east-1
+      STORAGE_USE_SSL: "false"
+      TEMP_DIR: /tmp/echo-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    profiles: ["full"]
+    build:
+      context: ${ECHO_WEB_PATH:-../echo-web}
+      args:
+        VITE_API_URL: http://localhost:3333
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
