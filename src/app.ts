@@ -4,7 +4,8 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyJwt from "@fastify/jwt";
 import multipart from "@fastify/multipart";
 import * as Sentry from "@sentry/node";
-import fastify from "fastify";
+import fastify, { type FastifyError } from "fastify";
+import { ZodError } from "zod";
 
 import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { authRoutes } from "./infra/http/routes/auth.routes";
@@ -17,11 +18,31 @@ import { userRoutes } from "./infra/http/routes/user.routes";
 import { isSentryEnabled } from "./infra/libs/sentry";
 
 export async function buildApp() {
-  const app = fastify({ logger: true });
+  const app = fastify({ logger: env.NODE_ENV !== "test" });
 
   if (isSentryEnabled) {
     Sentry.setupFastifyErrorHandler(app);
   }
+
+  app.setErrorHandler<FastifyError>((error, _request, reply) => {
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        message: "Validation error",
+        issues: error.issues.map((issue) => ({
+          path: issue.path.join("."),
+          code: issue.code,
+          message: issue.message,
+        })),
+      });
+    }
+
+    const statusCode =
+      typeof error.statusCode === "number" && error.statusCode >= 400 ? error.statusCode : 500;
+
+    return reply.status(statusCode).send({
+      message: statusCode >= 500 ? "Internal server error" : error.message,
+    });
+  });
 
   await app.register(multipart, {
     limits: {

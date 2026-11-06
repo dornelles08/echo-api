@@ -18,10 +18,6 @@ export class S3StorageService implements StorageService {
 
   constructor() {
     const protocol = env.MINIO_USE_SSL ? "https" : "http";
-    console.log(env.MINIO_USE_SSL);
-    console.log(
-      `Initializing S3 client with endpoint: ${protocol}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`,
-    );
 
     this.client = new S3Client({
       endpoint: `${protocol}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`,

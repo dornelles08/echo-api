@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const createMediaSchema = z.object({
-  filename: z.string(),
-  url: z.string(),
+  filename: z.string().min(1),
+  url: z.string().min(1),
   storageKey: z.string().optional(),
   type: z.enum(["video", "audio"]).default("audio"),
-  language: z.string(),
-  duration: z.number(),
+  language: z.string().min(1),
+  duration: z.number().min(0),
   prompt: z.string().optional(),
   tags: z.string().array().optional(),
 });
@@ -14,14 +14,14 @@ export const createMediaSchema = z.object({
 export type CreateMediaInput = z.infer<typeof createMediaSchema>;
 
 export const getMediaParamsSchema = z.object({
-  mediaId: z.string(),
+  mediaId: z.uuid(),
 });
 
 export type GetMediaParams = z.infer<typeof getMediaParamsSchema>;
 
 export const fetchMediasQuerySchema = z.object({
-  page: z.coerce.number().optional().default(1),
-  perPage: z.coerce.number().optional().default(20),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  perPage: z.coerce.number().int().min(1).max(100).optional().default(20),
   tags: z
     .string()
     .transform((val) => val.split(","))
@@ -46,7 +46,7 @@ export const fetchMediasQuerySchema = z.object({
 export type FetchMediasQuery = z.infer<typeof fetchMediasQuerySchema>;
 
 export const summaryMediaParamsSchema = z.object({
-  mediaId: z.string(),
+  mediaId: z.uuid(),
 });
 
 export type SummaryMediaParams = z.infer<typeof summaryMediaParamsSchema>;
