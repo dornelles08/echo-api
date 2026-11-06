@@ -119,6 +119,55 @@ O script cria um usuário, faz upload de um WAV de 1s, cria a mídia, espera a
 transcrição, solicita o resumo e valida o resultado persistido. Requer `curl` e
 `python3`; use `BASE_URL` para apontar para outra API.
 
+## Testes
+
+A suíte tem dois projetos (Vitest Projects):
+
+| Projeto | Escopo | Como funciona |
+| --- | --- | --- |
+| `unit` | `src/**/*.spec.ts` | testes unitários de domínio e de infra (repositórios in-memory) |
+| `e2e` | `e2e/**/*.e2e.spec.ts` | testes HTTP de ponta a ponta com `app.inject` |
+
+Detalhes do `e2e`:
+
+- banco PostgreSQL real e **descartável** (`docker-compose.e2e.yml`, porta 5433; ou um Postgres
+  descartável no homelab/rede privada via `E2E_DATABASE_URL`). Hosts públicos não são aceitos e
+  não existe fallback para `DATABASE_URL` de desenvolvimento/produção;
+- cada arquivo de teste ganha um **schema próprio** (`e2e_<timestamp>_<uuid>`), criado antes e
+  apagado (`DROP SCHEMA ... CASCADE`) depois; as migrations de `drizzle/` são aplicadas no schema;
+- filas BullMQ são substituídas por uma fila em memória (`e2e/helpers/memory-queue.ts`) que
+  registra os jobs publicados — o e2e não depende de Redis;
+- storage roda em modo `local` num diretório temporário;
+- a cada teste as tabelas são truncadas e os seeds de planos/templates re-aplicados;
+- cobre health, CORS, cadastro/login/refresh, `/me`, planos, templates, tags, CRUD de mídias,
+  paginação/filtros, upload (incl. cotas e planos) e o job de expurgo de arquivos expirados.
+
+Com Docker disponível (padrão):
+
+```bash
+pnpm e2e:db:start   # sobe o Postgres descartável na 5433 (ou pnpm test:e2e sobe sozinho)
+pnpm test:e2e
+pnpm e2e:db:stop    # derruba e apaga tudo
+```
+
+Sem Docker, aponte `E2E_DATABASE_URL` para um Postgres **descartável** em rede privada
+(RFC1918 ou `.local`, ex.: homelab) — hosts públicos são rejeitados:
+
+```bash
+E2E_DATABASE_URL=postgresql://echo:echo@192.168.0.10:5433/echo_e2e pnpm test:e2e
+```
+
+(O schema `e2e_*` é criado e destruído no próprio arquivo de teste.)
+
+Scripts:
+
+| Script | Descrição |
+| --- | --- |
+| `pnpm test` | roda unit + e2e |
+| `pnpm test:unit` | roda apenas `src/**/*.spec.ts` |
+| `pnpm test:e2e` | roda apenas `e2e/**/*.e2e.spec.ts` |
+| `pnpm test:cov` | cobertura (v8) |
+
 ## Git hooks (husky)
 
 `pnpm install` configura o husky automaticamente (script `prepare`). Os hooks versionados ficam em `.husky/`:
@@ -138,7 +187,10 @@ Para pular os hooks pontualmente (não recomendado): `git commit --no-verify` / 
 | `pnpm build` | bundle ESM em `dist/` |
 | `pnpm start` | executa `dist/server.js` |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | testes com Vitest |
+| `pnpm test` | roda unit + e2e (PGlite; sem infra externa) |
+| `pnpm test:unit` | roda apenas os testes unitários |
+| `pnpm test:e2e` | roda apenas os testes e2e |
+| `pnpm test:cov` | cobertura com v8 |
 | `pnpm lint` | Biome check |
 | `pnpm lint:fix` | Biome check + fix |
 | `pnpm db:generate` | gera migration a partir do schema |
