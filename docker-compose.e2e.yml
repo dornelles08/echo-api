@@ -1,0 +1,21 @@
+# Banco Postgres descartável exclusivo para os testes e2e.
+#
+#   docker compose -f docker-compose.e2e.yml up -d   (ou: pnpm e2e:db:start)
+#   docker compose -f docker-compose.e2e.yml down -v (ou: pnpm e2e:db:stop)
+#
+# Porta 5433 para não colidir com o Postgres de desenvolvimento (5432).
+# O container não tem volume: `down` apaga tudo. Dados aqui são 100% de teste.
+services:
+  postgres-e2e:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: echo
+      POSTGRES_PASSWORD: echo
+      POSTGRES_DB: echo_e2e
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U echo -d echo_e2e"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
