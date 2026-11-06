@@ -2,6 +2,9 @@
   "name": "echo-api",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "packageManager": "pnpm@9.15.2",
   "type": "module",
   "main": "./dist/server.js",
@@ -45,7 +48,7 @@
     "@biomejs/biome": "2.2.4",
     "@faker-js/faker": "^10.2.0",
     "@types/bcrypt": "^6.0.0",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.19.2",
     "drizzle-kit": "^0.31.4",
     "tsup": "^8.5.0",
     "tsx": "^4.19.2",

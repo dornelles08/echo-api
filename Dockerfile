@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 
 RUN corepack enable \
     && apk add --no-cache python3 make g++
@@ -11,7 +11,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:22-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 RUN corepack enable \
     && apk add --no-cache ffmpeg

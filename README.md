@@ -4,7 +4,7 @@ API HTTP do Echo — upload de mídia, transcrição assíncrona e geração de 
 
 ## Stack
 
-- Node.js 22 + TypeScript
+- Node.js 24 + TypeScript
 - Fastify 5
 - PostgreSQL + Drizzle ORM
 - Redis + BullMQ (apenas publicação de jobs)
@@ -46,7 +46,7 @@ drizzle/            # migrations SQL geradas pelo drizzle-kit
 
 ## Setup
 
-Requisitos: Node.js 22+, pnpm, e (opcional) Docker para Postgres/Redis/MinIO.
+Requisitos: Node.js 24+, pnpm, e (opcional) Docker para Postgres/Redis/MinIO.
 
 ```bash
 pnpm install
