@@ -33,6 +33,10 @@ const envSchema = z.object({
   MINIO_REGION: z.string().default("us-east-1"),
 
   SENTRY_DSN: z.string().default(""),
+
+  // Cron pattern for the expired media files cleanup job (node-cron).
+  // Set to "disabled" to turn the job off.
+  CLEANUP_EXPIRED_FILES_CRON: z.string().default("0 3 * * *"),
 });
 
 const parsed = envSchema.safeParse(process.env);

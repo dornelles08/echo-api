@@ -78,6 +78,7 @@ services:
       DATABASE_URL: postgres://echo:echo@postgres:5432/echo
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      CLEANUP_EXPIRED_FILES_CRON: "0 3 * * *"
       JWT_SECRET: dev-secret
       JWT_EXPIRES_IN: 1h
       JWT_REFRESH_EXPIRES_IN: 7d

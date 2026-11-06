@@ -1,18 +1,36 @@
 import type { StorageService, StoredFile } from "../../file/services/storage.service";
 
 export class MemoryStorageService implements StorageService {
-  saveFile(_content: Buffer | Uint8Array, filename: string): Promise<StoredFile> {
+  private readonly files = new Map<string, Buffer>();
+  /** Keys registered here make `deleteFile` throw, to exercise failure paths. */
+  readonly failingKeys = new Set<string>();
+
+  saveFile(content: Buffer | Uint8Array, filename: string): Promise<StoredFile> {
+    const key = `memory/${filename}`;
+    this.files.set(key, Buffer.from(content));
     return Promise.resolve({
-      key: `memory/${filename}`,
+      key,
       url: `memory:///${filename}`,
     });
   }
 
-  readFile(_key: string): Promise<Buffer> {
-    throw new Error("Method not implemented.");
+  readFile(key: string): Promise<Buffer> {
+    const content = this.files.get(key);
+    if (!content) {
+      return Promise.reject(new Error(`File not found: ${key}`));
+    }
+    return Promise.resolve(content);
   }
 
-  deleteFile(_key: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  deleteFile(key: string): Promise<void> {
+    if (this.failingKeys.has(key)) {
+      return Promise.reject(new Error(`Failed to delete file: ${key}`));
+    }
+    this.files.delete(key);
+    return Promise.resolve();
+  }
+
+  has(key: string): boolean {
+    return this.files.has(key);
   }
 }

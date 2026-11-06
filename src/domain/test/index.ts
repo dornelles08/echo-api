@@ -2,6 +2,7 @@ export * from "./factories/make-media";
 export * from "./factories/make-plan";
 export * from "./factories/make-summary-template";
 export * from "./factories/make-user";
+export * from "./repositories/in-memory-expired-storage-files.repository";
 export * from "./repositories/in-memory-media.repository";
 export * from "./repositories/in-memory-plan.repository";
 export * from "./repositories/in-memory-summary-template.repository";

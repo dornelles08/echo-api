@@ -25,6 +25,7 @@ Responsabilidades da API:
 - criação de mídias e publicação na fila de transcrição
 - listagem/detalhe de mídias, tags, planos e templates de resumo
 - publicação de jobs de resumo
+- expurgo (cron) de arquivos no storage cuja retenção do plano expirou
 - migrations e seeds do banco
 
 ## Estrutura
@@ -38,6 +39,7 @@ src/
     http/               # controllers, routes, middlewares, presenters
     factories/          # composição dos use-cases
     service/            # storage, criptografia, fila
+    jobs/               # jobs agendados (node-cron) executados no processo da API
     env/                # validação das variáveis de ambiente
   app.ts            # factory do Fastify
   server.ts         # bootstrap
@@ -151,6 +153,25 @@ transcrição, solicita o resumo e valida o resultado persistido. Requer `curl` 
 | `UPLOAD_DIR` | diretório usado quando `STORAGE_TYPE=local` |
 | `MINIO_*` | endpoint, credenciais, bucket, SSL e região do storage |
 | `SENTRY_DSN` | opcional; Sentry desabilitado quando vazio |
+| `CLEANUP_EXPIRED_FILES_CRON` | padrão cron do job de expurgo de arquivos expirados (default `0 3 * * *`; use `disabled` para desligar) |
+
+## Jobs agendados
+
+### Expurgo de arquivos expirados (MinIO/S3)
+
+O processo da API registra um cron (via `node-cron`, padrão `0 3 * * *`, configurável em
+`CLEANUP_EXPIRED_FILES_CRON`; use `disabled` para desligar) que remove do storage os arquivos
+de mídias cuja retenção, definida pelo plano do dono da mídia, já venceu.
+
+Regras:
+
+- A retenção é contada a partir do `created_at` da mídia.
+- Áudios usam `plans.audio_retention_days`; vídeos usam `plans.video_retention_days`.
+- Retenção `0` significa "nunca expira" e o arquivo é ignorado pelo job.
+- Apenas o objeto no storage é apagado. O registro em `medias` é mantido
+  (transcrição, resumo, segmentos etc.); `storage_key` é limpo e `url` é esvaziada.
+  Mídias sem `storage_key` não são reprocessadas.
+- Falhas individuais não interrompem o lote: o job loga os erros e tenta de novo na próxima execução.
 
 ## Endpoints
 
