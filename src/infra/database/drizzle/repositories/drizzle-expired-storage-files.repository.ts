@@ -9,6 +9,10 @@ import { medias, plans, users } from "../schema";
 
 export class DrizzleExpiredStorageFilesRepository implements ExpiredStorageFilesRepository {
   async findExpired(now: Date): Promise<ExpiredStorageFile[]> {
+    // Raw sql fragments carry no column type info, so porsager cannot infer
+    // how to serialize a Date — bind an ISO string instead (timestamptz
+    // comparison accepts it).
+    const nowIso = now.toISOString();
     const rows = await db
       .select({ id: medias.id, storageKey: medias.storageKey })
       .from(medias)
@@ -19,10 +23,10 @@ export class DrizzleExpiredStorageFilesRepository implements ExpiredStorageFiles
           isNotNull(medias.storageKey),
           sql`(
             (${medias.type} = 'audio' AND ${plans.audioRetentionDays} > 0
-              AND ${medias.createdAt} + make_interval(days => ${plans.audioRetentionDays}) <= ${now})
+              AND ${medias.createdAt} + make_interval(days => ${plans.audioRetentionDays}) <= ${nowIso})
             OR
             (${medias.type} = 'video' AND ${plans.videoRetentionDays} > 0
-              AND ${medias.createdAt} + make_interval(days => ${plans.videoRetentionDays}) <= ${now})
+              AND ${medias.createdAt} + make_interval(days => ${plans.videoRetentionDays}) <= ${nowIso})
           )`,
         ),
       );
