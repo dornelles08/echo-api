@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import { UnknowError } from "../../errors/unknow.error";
 import {
   FakeCryptService,
   InMemoryPlanRepository,
@@ -64,5 +65,27 @@ describe("Authenticate User", () => {
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(WrongPasswordError);
+  });
+
+  it("should wrap unexpected crypt service failures in UnknowError", async () => {
+    const user = makeUserFactory();
+    await inMemoryUserRepository.create(user);
+
+    const crashingCryptService = {
+      hash: async () => "unused",
+      compare: async () => {
+        throw new Error("crypt exploded");
+      },
+    };
+
+    const sutWithCrash = new AuthenticateUserUseCase(inMemoryUserRepository, crashingCryptService);
+
+    const result = await sutWithCrash.execute({
+      email: user.email,
+      password: "123456",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(UnknowError);
   });
 });

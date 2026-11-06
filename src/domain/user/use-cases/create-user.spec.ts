@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { EntityNotFoundError } from "../../errors/entity-not-found.error";
 import {
   FakeCryptService,
   InMemoryPlanRepository,
@@ -64,5 +65,48 @@ describe("Create User", () => {
     });
 
     expect(result.isLeft()).toBe(true);
+  });
+
+  it("should return EntityNotFoundError when the default plan is missing", async () => {
+    inMemoryPlanRepository.items = [];
+
+    const result = await sut.execute({
+      name: "John Doe",
+      email: "johndoe@example.com",
+      password: "123456",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value).toBeInstanceOf(EntityNotFoundError);
+    }
+    expect(inMemoryUserRepository.items).toHaveLength(0);
+  });
+
+  it("should store the value produced by the crypt service, not the plain password", async () => {
+    const calls: string[] = [];
+    const spyCryptService = {
+      hash: async (plain: string) => {
+        calls.push(plain);
+        return `hashed:${plain}`;
+      },
+      compare: async () => true,
+    };
+
+    const sutWithSpy = new CreateUserUseCase(
+      inMemoryUserRepository,
+      spyCryptService,
+      inMemoryPlanRepository,
+    );
+
+    const result = await sutWithSpy.execute({
+      name: "John Doe",
+      email: "johndoe@example.com",
+      password: "super-secret",
+    });
+
+    expect(result.isRight()).toBe(true);
+    expect(calls).toEqual(["super-secret"]);
+    expect(inMemoryUserRepository.items[0]?.passwordHash).toBe("hashed:super-secret");
   });
 });

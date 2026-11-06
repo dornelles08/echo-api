@@ -23,4 +23,13 @@ describe("Fetch Summary Templates Use Case", () => {
       expect(result.value.summaryTemplate).toHaveLength(2);
     }
   });
+
+  it("should return an empty list when there are no templates", async () => {
+    const result = await sut.execute();
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.summaryTemplate).toEqual([]);
+    }
+  });
 });

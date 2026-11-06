@@ -39,7 +39,9 @@ export class InMemoryMediaRepository implements MediaRepository {
       result = result.filter((media) => media.type === filters.type);
     }
     if (filters?.tags && filters.tags.length > 0) {
-      result = result.filter((media) => filters.tags?.every((tag) => media.tags?.includes(tag)));
+      // Matches the drizzle repository (`arrayOverlaps`): the media matches
+      // when it has at least one of the given tags.
+      result = result.filter((media) => filters.tags?.some((tag) => media.tags?.includes(tag)));
     }
     if (filters?.status) {
       result = result.filter((media) => media.status === filters.status);

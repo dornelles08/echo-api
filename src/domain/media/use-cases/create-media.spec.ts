@@ -65,4 +65,48 @@ describe("Create Media", () => {
     });
     expect(memoryQueueService.queues.media_transcription_queue).toHaveLength(1);
   });
+
+  it("should apply domain defaults to the created media", async () => {
+    const result = await sut.execute({
+      filename: "test-audio.mp3",
+      url: "http://example.com/test-audio.mp3",
+      storageKey: "storage-key-1",
+      type: "audio",
+      language: "pt-BR",
+      duration: 10,
+      userId: "user-123",
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.media.status).toBe("pending_transcription");
+      expect(result.value.media.tags).toEqual([]);
+      expect(result.value.media.summaryAttempts).toBe(0);
+      expect(result.value.media.storageKey).toBe("storage-key-1");
+    }
+  });
+
+  it("should publish a transcription job with the media id, url and storageKey", async () => {
+    const result = await sut.execute({
+      filename: "test-audio.mp3",
+      url: "http://example.com/test-audio.mp3",
+      storageKey: "storage-key-1",
+      type: "audio",
+      language: "pt-BR",
+      duration: 10,
+      userId: "user-123",
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      const jobs = memoryQueueService.queues.media_transcription_queue ?? [];
+      expect(jobs).toEqual([
+        {
+          mediaId: result.value.media.id,
+          url: "http://example.com/test-audio.mp3",
+          storageKey: "storage-key-1",
+        },
+      ]);
+    }
+  });
 });

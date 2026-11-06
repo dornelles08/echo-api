@@ -41,4 +41,32 @@ describe("isCorsOriginAllowed", () => {
   it("allows every origin when the pattern is `*`", () => {
     expect(isCorsOriginAllowed("http://example.com:8080", ["*"])).toBe(true);
   });
+
+  it("returns no patterns for an empty CLIENT_ORIGIN string", () => {
+    expect(parseCorsOrigins("")).toEqual([]);
+    expect(parseCorsOrigins("   ")).toEqual([]);
+  });
+
+  it("denies all origins when there are no patterns and an Origin header is set", () => {
+    expect(isCorsOriginAllowed("http://a.com", [])).toBe(false);
+    expect(isCorsOriginAllowed(undefined, [])).toBe(true);
+  });
+
+  it("supports multiple wildcard segments in one pattern", () => {
+    expect(isCorsOriginAllowed("https://app.example.com/admin", ["https://*.example.com/*"])).toBe(
+      true,
+    );
+    expect(isCorsOriginAllowed("https://a.b.example.com/x", ["https://*.example.com/*"])).toBe(
+      true,
+    );
+    // A leading `*.` wildcard does not match the bare apex domain (same as browsers).
+    expect(isCorsOriginAllowed("https://example.com/", ["https://*.example.com/*"])).toBe(false);
+    expect(isCorsOriginAllowed("http://app.example.com/x", ["https://*.example.com/*"])).toBe(
+      false,
+    );
+  });
+
+  it("is case-insensitive when matching origins", () => {
+    expect(isCorsOriginAllowed("HTTP://LOCALHOST:3000", ["http://localhost:3000"])).toBe(true);
+  });
 });
