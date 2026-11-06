@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { z } from "zod";
 
+import { parseCorsOrigins } from "./cors";
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["dev", "test", "production"]).default("dev"),
   PORT: z.coerce.number().default(3333),
@@ -24,7 +26,10 @@ const envSchema = z.object({
   MINIO_ACCESS_KEY: z.string().default("minioadmin"),
   MINIO_SECRET_KEY: z.string().default("minioadmin"),
   MINIO_BUCKET: z.string().default("echo_dev"),
-  MINIO_USE_SSL: z.coerce.boolean().default(false),
+  MINIO_USE_SSL: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
   MINIO_REGION: z.string().default("us-east-1"),
 
   SENTRY_DSN: z.string().default(""),
@@ -39,6 +44,6 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 
-export const corsOrigins = env.CLIENT_ORIGIN.split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+export const corsOrigins = parseCorsOrigins(env.CLIENT_ORIGIN);
+
+export { isCorsOriginAllowed } from "./cors";

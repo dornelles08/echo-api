@@ -43,7 +43,7 @@ export class CreateUserUseCase {
     // pick an arbitrary plan during sign-up.
     const defaultPlan = await this.planRepository.findByName(DEFAULT_PLAN_NAME);
 
-    if (!defaultPlan) {
+    if (!defaultPlan) {      
       return left(new EntityNotFoundError(`Default plan (${DEFAULT_PLAN_NAME})`));
     }
 

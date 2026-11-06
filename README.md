@@ -140,7 +140,7 @@ transcrição, solicita o resumo e valida o resultado persistido. Requer `curl` 
 | --- | --- |
 | `NODE_ENV` | `dev`, `test` ou `production` |
 | `PORT` | porta HTTP (default `3333`) |
-| `CLIENT_ORIGIN` | origens permitidas no CORS (separadas por vírgula) |
+| `CLIENT_ORIGIN` | origens permitidas no CORS (separadas por vírgula, com suporte a `*`, ex.: `http://localhost:*`) |
 | `DATABASE_URL` | connection string do PostgreSQL |
 | `DATABASE_POOL_SIZE` | tamanho do pool (default `10`) |
 | `REDIS_HOST` / `REDIS_PORT` | conexão do BullMQ |

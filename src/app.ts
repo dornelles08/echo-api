@@ -6,7 +6,7 @@ import multipart from "@fastify/multipart";
 import * as Sentry from "@sentry/node";
 import fastify from "fastify";
 
-import { corsOrigins, env } from "./infra/env";
+import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { authRoutes } from "./infra/http/routes/auth.routes";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
@@ -41,7 +41,7 @@ export async function buildApp() {
   });
 
   await app.register(fastifyCors, {
-    origin: corsOrigins,
+    origin: (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
     credentials: true,
   });
 

@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
+    DeleteObjectCommand,
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -18,6 +18,9 @@ export class S3StorageService implements StorageService {
 
   constructor() {
     const protocol = env.MINIO_USE_SSL ? "https" : "http";
+    console.log(env.MINIO_USE_SSL);
+    console.log(`Initializing S3 client with endpoint: ${protocol}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`);
+    
 
     this.client = new S3Client({
       endpoint: `${protocol}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`,
