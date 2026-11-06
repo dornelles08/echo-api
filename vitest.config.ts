@@ -4,6 +4,25 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "node",
-    include: ["src/**/*.spec.ts"],
+    projects: [
+      {
+        test: {
+          name: "unit",
+          include: ["src/**/*.spec.ts"],
+          environment: "node",
+          setupFiles: ["./test/setup-env.ts"],
+        },
+      },
+      {
+        test: {
+          name: "e2e",
+          include: ["e2e/**/*.e2e.spec.ts"],
+          environment: "node",
+          setupFiles: ["./e2e/setup.ts"],
+          testTimeout: 30000,
+          hookTimeout: 60000,
+        },
+      },
+    ],
   },
 });
