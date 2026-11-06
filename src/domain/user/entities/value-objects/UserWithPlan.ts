@@ -14,10 +14,10 @@ export interface UserWithPlanProps {
 
 export class UserWithPlan {
   constructor(private readonly props: UserWithPlanProps) {
-    this.props = props;
-    this.props.minutesRemaining = props.minutesUsed
-      ? Math.max(0, props.plan.monthlyMinutesLimit - props.minutesUsed)
-      : undefined;
+    this.props.minutesRemaining =
+      props.minutesUsed !== undefined
+        ? Math.max(0, props.plan.monthlyMinutesLimit - props.minutesUsed)
+        : undefined;
   }
 
   get id() {

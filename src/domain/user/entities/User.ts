@@ -35,7 +35,7 @@ export class User extends Entity<UserProps> {
   }
 
   set planId(planId: string) {
-    this.planId = planId;
+    this.props.planId = planId;
   }
 
   static create(props: UserProps, id?: string) {

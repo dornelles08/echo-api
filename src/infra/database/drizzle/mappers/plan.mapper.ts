@@ -13,6 +13,7 @@ export namespace PlanMapper {
         audioRetentionDays: row.audioRetentionDays,
         videoRetentionDays: row.videoRetentionDays,
         maxSummaryAttemptsPerMedia: row.maxSummaryAttemptsPerMedia,
+        isActive: row.isActive,
       },
       row.id,
     );
@@ -28,6 +29,7 @@ export namespace PlanMapper {
       audioRetentionDays: plan.audioRetentionDays,
       videoRetentionDays: plan.videoRetentionDays,
       maxSummaryAttemptsPerMedia: plan.maxSummaryAttemptsPerMedia,
+      isActive: plan.isActive,
     };
   }
 }

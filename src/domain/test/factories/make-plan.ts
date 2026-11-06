@@ -13,6 +13,7 @@ export function makePlanFactory(overrides: Partial<PlanProps> = {}, id?: string)
       audioRetentionDays: faker.number.int({ min: 1, max: 30 }) ?? 7,
       maxSummaryAttemptsPerMedia: faker.number.int({ min: 1, max: 10 }) ?? 1,
       videoRetentionDays: faker.number.int({ min: 1, max: 30 }) ?? 7,
+      isActive: true,
       ...overrides,
     },
     id,

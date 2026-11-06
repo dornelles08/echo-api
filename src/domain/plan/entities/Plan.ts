@@ -9,6 +9,7 @@ export interface PlanProps {
   audioRetentionDays: number;
   videoRetentionDays: number;
   maxSummaryAttemptsPerMedia: number;
+  isActive?: boolean;
 }
 
 export class Plan extends Entity<PlanProps> {
@@ -44,7 +45,11 @@ export class Plan extends Entity<PlanProps> {
     return this.props.maxSummaryAttemptsPerMedia;
   }
 
+  get isActive() {
+    return this.props.isActive ?? true;
+  }
+
   static create(props: PlanProps, id?: string) {
-    return new Plan(props, id);
+    return new Plan({ isActive: true, ...props }, id);
   }
 }
