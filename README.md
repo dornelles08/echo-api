@@ -119,6 +119,17 @@ O script cria um usuário, faz upload de um WAV de 1s, cria a mídia, espera a
 transcrição, solicita o resumo e valida o resultado persistido. Requer `curl` e
 `python3`; use `BASE_URL` para apontar para outra API.
 
+## Git hooks (husky)
+
+`pnpm install` configura o husky automaticamente (script `prepare`). Os hooks versionados ficam em `.husky/`:
+
+| Hook | Quando | Roda |
+| --- | --- | --- |
+| `pre-commit` | antes do commit | `pnpm lint` + `pnpm typecheck` |
+| `pre-push` | antes do push | `pnpm test` |
+
+Para pular os hooks pontualmente (não recomendado): `git commit --no-verify` / `git push --no-verify`.
+
 ## Scripts
 
 | Script | Descrição |
