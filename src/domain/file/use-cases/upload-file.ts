@@ -1,4 +1,8 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
@@ -31,6 +35,21 @@ export function isVideoFile(filename: string): boolean {
 export async function getMediaDurationSeconds(content: Buffer | Uint8Array): Promise<number> {
   const input = Buffer.isBuffer(content) ? content : Buffer.from(content);
 
+  // ffprobe requires a seekable input (e.g. MP4 with moov atom at the end),
+  // so probe a temporary file instead of piping via stdin.
+  const tmpDir = await mkdtemp(join(tmpdir(), "echo-probe-"));
+  const tmpFile = join(tmpDir, `media-${randomUUID()}`);
+
+  try {
+    await writeFile(tmpFile, input);
+
+    return await probeDuration(tmpFile);
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+function probeDuration(filePath: string): Promise<number> {
   return new Promise((resolve) => {
     const ffprobe = spawn("ffprobe", [
       "-v",
@@ -39,7 +58,7 @@ export async function getMediaDurationSeconds(content: Buffer | Uint8Array): Pro
       "format=duration",
       "-of",
       "default=noprint_wrappers=1:nokey=1",
-      "-",
+      filePath,
     ]);
 
     const chunks: Buffer[] = [];
@@ -64,9 +83,6 @@ export async function getMediaDurationSeconds(content: Buffer | Uint8Array): Pro
     ffprobe.on("error", () => {
       resolve(0);
     });
-
-    ffprobe.stdin.write(input);
-    ffprobe.stdin.end();
   });
 }
 
