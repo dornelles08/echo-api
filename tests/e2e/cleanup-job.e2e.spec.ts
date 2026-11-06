@@ -3,8 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { env } from "../src/infra/env";
-import { registerCleanupExpiredFilesJob } from "../src/infra/jobs/cleanup-expired-files.job";
+import { env } from "../../src/infra/env";
+import { registerCleanupExpiredFilesJob } from "../../src/infra/jobs/cleanup-expired-files.job";
 import { registerAndLogin } from "./helpers/auth";
 import { makeWavBuffer, multipartFilePayload } from "./helpers/multipart";
 import { type TestApp, useTestApp } from "./helpers/test-app";

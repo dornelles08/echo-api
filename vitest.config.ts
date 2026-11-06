@@ -10,15 +10,15 @@ export default defineConfig({
           name: "unit",
           include: ["src/**/*.spec.ts"],
           environment: "node",
-          setupFiles: ["./test/setup-env.ts"],
+          setupFiles: ["./tests/setup-env.ts"],
         },
       },
       {
         test: {
           name: "e2e",
-          include: ["e2e/**/*.e2e.spec.ts"],
+          include: ["tests/e2e/**/*.e2e.spec.ts"],
           environment: "node",
-          setupFiles: ["./e2e/setup.ts"],
+          setupFiles: ["./tests/e2e/setup.ts"],
           testTimeout: 30000,
           hookTimeout: 60000,
         },

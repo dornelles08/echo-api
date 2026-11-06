@@ -20,8 +20,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "e2e/**/*.ts",
-    "test/**/*.ts",
+    "tests/**/*.ts",
     "drizzle.config.ts",
     "tsup.config.ts",
     "vitest.config.ts"

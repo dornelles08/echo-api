@@ -1,7 +1,7 @@
 import postgres from "postgres";
 
-import { plansSeed } from "../../src/infra/database/drizzle/seeds/plans";
-import { summaryTemplatesSeed } from "../../src/infra/database/drizzle/seeds/summary-templates";
+import { plansSeed } from "../../../src/infra/database/drizzle/seeds/plans";
+import { summaryTemplatesSeed } from "../../../src/infra/database/drizzle/seeds/summary-templates";
 
 /**
  * Cliente SQL para o schema descartável do arquivo de teste. `DATABASE_URL`

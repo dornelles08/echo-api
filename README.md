@@ -44,6 +44,9 @@ src/
   app.ts            # factory do Fastify
   server.ts         # bootstrap
 drizzle/            # migrations SQL geradas pelo drizzle-kit
+tests/
+  setup-env.ts      # defaults mínimos de env para todos os testes
+  e2e/              # suíte e2e (Postgres descartável, schema por arquivo)
 ```
 
 ## Setup
@@ -126,7 +129,7 @@ A suíte tem dois projetos (Vitest Projects):
 | Projeto | Escopo | Como funciona |
 | --- | --- | --- |
 | `unit` | `src/**/*.spec.ts` | testes unitários de domínio e de infra (repositórios in-memory) |
-| `e2e` | `e2e/**/*.e2e.spec.ts` | testes HTTP de ponta a ponta com `app.inject` |
+| `e2e` | `tests/e2e/**/*.e2e.spec.ts` | testes HTTP de ponta a ponta com `app.inject` |
 
 Detalhes do `e2e`:
 
@@ -135,7 +138,7 @@ Detalhes do `e2e`:
   não existe fallback para `DATABASE_URL` de desenvolvimento/produção;
 - cada arquivo de teste ganha um **schema próprio** (`e2e_<timestamp>_<uuid>`), criado antes e
   apagado (`DROP SCHEMA ... CASCADE`) depois; as migrations de `drizzle/` são aplicadas no schema;
-- filas BullMQ são substituídas por uma fila em memória (`e2e/helpers/memory-queue.ts`) que
+- filas BullMQ são substituídas por uma fila em memória (`tests/e2e/helpers/memory-queue.ts`) que
   registra os jobs publicados — o e2e não depende de Redis;
 - storage roda em modo `local` num diretório temporário;
 - a cada teste as tabelas são truncadas e os seeds de planos/templates re-aplicados;
@@ -165,7 +168,7 @@ Scripts:
 | --- | --- |
 | `pnpm test` | roda unit + e2e |
 | `pnpm test:unit` | roda apenas `src/**/*.spec.ts` |
-| `pnpm test:e2e` | roda apenas `e2e/**/*.e2e.spec.ts` |
+| `pnpm test:e2e` | roda apenas `tests/e2e/**/*.e2e.spec.ts` |
 | `pnpm test:cov` | cobertura (v8) |
 
 ## Git hooks (husky)
@@ -187,7 +190,7 @@ Para pular os hooks pontualmente (não recomendado): `git commit --no-verify` / 
 | `pnpm build` | bundle ESM em `dist/` |
 | `pnpm start` | executa `dist/server.js` |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | roda unit + e2e (PGlite; sem infra externa) |
+| `pnpm test` | roda unit + e2e (Postgres descartável; ver seção Testes) |
 | `pnpm test:unit` | roda apenas os testes unitários |
 | `pnpm test:e2e` | roda apenas os testes e2e |
 | `pnpm test:cov` | cobertura com v8 |

@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/src/**/*", "**/e2e/**/*", "**/test/**/*", "**/*.config.ts", "!**/dist/**", "!**/drizzle/**"]
+    "includes": ["**/src/**/*", "**/tests/**/*", "**/*.config.ts", "!**/dist/**", "!**/drizzle/**"]
   },
   "formatter": {
     "enabled": true,

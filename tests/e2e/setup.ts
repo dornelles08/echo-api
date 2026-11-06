@@ -29,7 +29,7 @@ await ensureE2EDatabase("backend");
 await cleanupStaleSchemas(baseDatabaseUrl);
 const schema = await createE2ESchema(baseDatabaseUrl);
 
-vi.mock("../src/infra/service/redis-queue.service.ts", async () => {
+vi.mock("../../src/infra/service/redis-queue.service.ts", async () => {
   const { InMemoryQueueService } = await import("./helpers/memory-queue");
 
   return { RedisQueueService: InMemoryQueueService };

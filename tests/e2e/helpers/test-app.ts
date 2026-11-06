@@ -3,7 +3,7 @@ import { afterEach, beforeEach } from "vitest";
 import { resetQueueJobs } from "./memory-queue";
 import { resetTestDb } from "./test-db";
 
-export type TestApp = Awaited<ReturnType<typeof import("../../src/app").buildApp>>;
+export type TestApp = Awaited<ReturnType<typeof import("../../../src/app").buildApp>>;
 
 /**
  * Shared setup for e2e spec files: truncates and re-seeds the database and
@@ -20,7 +20,7 @@ export function useTestApp(): TestApp {
     await resetTestDb();
     resetQueueJobs();
 
-    const { buildApp } = await import("../../src/app");
+    const { buildApp } = await import("../../../src/app");
     state.app = await buildApp();
   });
 
