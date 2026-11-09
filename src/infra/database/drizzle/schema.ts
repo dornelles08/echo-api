@@ -122,6 +122,24 @@ export const verifications = pgTable(
   (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
 
+/** Refresh tokens revogados via logout (lista negra para invalidar JWTs já emitidos). */
+export const revokedRefreshTokens = pgTable(
+  "revoked_refresh_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    token: text("token").notNull().unique(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("revoked_refresh_tokens_user_id_idx").on(table.userId),
+    index("revoked_refresh_tokens_expires_at_idx").on(table.expiresAt),
+  ],
+);
+
 export const summaryTemplates = pgTable(
   "summary_templates",
   {
@@ -188,6 +206,7 @@ export const medias = pgTable(
   (table) => [
     index("medias_user_id_idx").on(table.userId),
     index("medias_status_idx").on(table.status),
+    index("medias_created_at_idx").on(table.createdAt),
     index("medias_tags_idx").using("gin", table.tags),
   ],
 );
@@ -197,4 +216,5 @@ export type PlanRow = typeof plans.$inferSelect;
 export type MediaRow = typeof medias.$inferSelect;
 export type SummaryTemplateRow = typeof summaryTemplates.$inferSelect;
 export type UsageCounterRow = typeof usageCounters.$inferSelect;
+export type RevokedRefreshTokenRow = typeof revokedRefreshTokens.$inferSelect;
 export type MediaStatus = Status;
