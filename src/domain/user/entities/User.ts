@@ -3,7 +3,7 @@ import { Entity } from "../../entity";
 export interface UserProps {
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   planId: string;
   createdAt?: Date;
   updatedAt?: Date;

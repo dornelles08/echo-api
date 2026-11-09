@@ -34,6 +34,8 @@ export class AuthenticateUserUseCase {
 
       if (!user) return left(new EntityNotFoundError("User"));
 
+      if (!user.passwordHash) return left(new WrongPasswordError());
+
       const isPasswordValid = await this.cryptService.compare(password, user.passwordHash);
 
       if (!isPasswordValid) return left(new WrongPasswordError());
