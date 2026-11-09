@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { bearer } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { db } from "../database/drizzle";
 import { plans } from "../database/drizzle/schema";
@@ -12,6 +13,7 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL ?? `http://localhost:${env.PORT}`,
   secret: env.BETTER_AUTH_SECRET,
   trustedOrigins: corsOrigins,
+  plugins: [bearer()],
   database: drizzleAdapter(db, {
     provider: "pg",
     usePlural: true,
