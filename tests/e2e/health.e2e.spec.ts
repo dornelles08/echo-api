@@ -5,11 +5,14 @@ import { useTestApp } from "./helpers/test-app";
 describe("health & infrastructure", () => {
   const app = useTestApp();
 
-  it("GET /health returns 200 ok", async () => {
+  it("GET /health returns 200 with dependency status", async () => {
     const response = await app.inject({ method: "GET", url: "/health" });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ status: "ok" });
+    const body = response.json();
+    expect(["ok", "degraded"]).toContain(body.status);
+    expect(body.dependencies).toBeDefined();
+    expect(body.dependencies.database).toBeDefined();
   });
 
   it("returns 404 for unknown routes", async () => {
