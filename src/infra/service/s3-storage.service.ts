@@ -67,8 +67,7 @@ export class S3StorageService implements StorageService {
         params: {
           Bucket: env.MINIO_BUCKET,
           Key: key,
-          // biome-ignore lint/suspicious/noExplicitAny: AWS SDK tipos são
-          // mais restritos que o suporte real de tempo de execução.
+          // biome-ignore lint/suspicious/noExplicitAny: AWS SDK tipos são mais restritos que o suporte real de tempo de execução
           Body: body as any,
         },
       });

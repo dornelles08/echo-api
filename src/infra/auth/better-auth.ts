@@ -12,7 +12,13 @@ const FREE_PLAN_NAME = "Free";
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL ?? `http://localhost:${env.PORT}`,
   secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: corsOrigins,
+  trustedOrigins:
+    env.NODE_ENV === "dev"
+      ? (request?: Request) => [
+          ...(request?.headers.get("origin") ? [request.headers.get("origin") as string] : []),
+          ...corsOrigins,
+        ]
+      : corsOrigins,
   plugins: [bearer()],
   database: drizzleAdapter(db, {
     provider: "pg",

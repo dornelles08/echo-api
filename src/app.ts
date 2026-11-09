@@ -38,7 +38,10 @@ export async function buildApp() {
   });
 
   await app.register(fastifyCors, {
-    origin: (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
+    origin:
+      env.NODE_ENV === "dev"
+        ? true
+        : (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
     credentials: true,
   });
 

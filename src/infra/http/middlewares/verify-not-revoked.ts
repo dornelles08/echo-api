@@ -11,8 +11,6 @@ export async function verifyNotRevoked(request: FastifyRequest, reply: FastifyRe
     return reply.status(401).send({ statusCode: 401, error: "UNAUTHORIZED", message: "No token" });
   }
 
-  const { sub } = request.user as { sub: string };
-
   const { DrizzleRevokedTokenRepository } = await import(
     "../../database/drizzle/repositories/drizzle-revoked-token.repository"
   );
