@@ -28,6 +28,12 @@ export class InMemoryUsageCounterRepository implements UsageCounterRepository {
     }
   }
 
+  async reserveMinutes(userId: string, minutes: number): Promise<boolean> {
+    const counter = await this.getOrCreate(userId);
+    counter.addMinutes(minutes);
+    return true;
+  }
+
   async findByUserId(userId: string): Promise<UsageCounter | null> {
     const counter = this.counters.get(userId);
     if (!counter) return null;

@@ -45,6 +45,52 @@ export class DrizzleUsageCounterRepository implements UsageCounterRepository {
       .where(eq(usageCounters.id, id));
   }
 
+  /**
+   * Reserva minutos de forma atômica dentro de uma transação. Bloqueia a linha
+   * do counter (`FOR UPDATE`), verifica se o ciclo está vigente e incrementa o
+   * uso. Retorna `true` se a reserva foi aplicada, `false` se não foi possível
+   * (ex.: linha não encontrada). O limite do plano é validado pelo chamador.
+   */
+  async reserveMinutes(userId: string, minutes: number): Promise<boolean> {
+    const { cycleStart, cycleEnd } = UsageCounter.getCurrentCycleDates();
+
+    return await db.transaction(async (tx) => {
+      const [existing] = await tx
+        .select()
+        .from(usageCounters)
+        .where(eq(usageCounters.userId, userId))
+        .for("update")
+        .limit(1);
+
+      let row = existing;
+
+      if (!row || new Date() > row.cycleEnd) {
+        const [upserted] = await tx
+          .insert(usageCounters)
+          .values({ userId, cycleStart, cycleEnd, minutesUsed: 0 })
+          .onConflictDoUpdate({
+            target: usageCounters.userId,
+            set: { cycleStart, cycleEnd, minutesUsed: 0, updatedAt: new Date() },
+          })
+          .returning();
+
+        if (!upserted) {
+          return false;
+        }
+        row = upserted;
+      }
+
+      const minutesUsed = Number(row.minutesUsed ?? 0);
+      const [updated] = await tx
+        .update(usageCounters)
+        .set({ minutesUsed: minutesUsed + minutes, updatedAt: new Date() })
+        .where(eq(usageCounters.id, row.id))
+        .returning();
+
+      return Boolean(updated);
+    });
+  }
+
   async findByUserId(userId: string): Promise<UsageCounter | null> {
     const [row] = await db
       .select()
