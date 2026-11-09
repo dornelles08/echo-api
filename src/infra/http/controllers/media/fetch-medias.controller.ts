@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { fetchMediasQuerySchema } from "../../../../contracts/index";
 import { makeFetchMediasUseCase } from "../../../factories/media/fetch-medias.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 import { MediaPresenter } from "../../presenters/media.presenter";
 
 export async function fetchMedias(request: FastifyRequest, reply: FastifyReply) {
@@ -23,7 +24,7 @@ export async function fetchMedias(request: FastifyRequest, reply: FastifyReply) 
   });
 
   if (result.isLeft()) {
-    return reply.status(500).send();
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { medias, meta } = result.value;

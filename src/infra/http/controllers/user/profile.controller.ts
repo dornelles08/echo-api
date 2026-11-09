@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { makeGetProfileUseCase } from "../../../factories/user/get-profile.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 import { UserWithPlanPresenter } from "../../presenters/user-with-plan.presenter";
 
 export async function profile(request: FastifyRequest, reply: FastifyReply) {
@@ -12,9 +13,7 @@ export async function profile(request: FastifyRequest, reply: FastifyReply) {
   });
 
   if (result.isLeft()) {
-    return reply.status(400).send({
-      message: result.value.message,
-    });
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { user } = result.value;

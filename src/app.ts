@@ -5,9 +5,9 @@ import fastifyJwt from "@fastify/jwt";
 import multipart from "@fastify/multipart";
 import * as Sentry from "@sentry/node";
 import fastify, { type FastifyError } from "fastify";
-import { ZodError } from "zod";
 
 import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
+import { handleError } from "./infra/http/error-handler";
 import { authRoutes } from "./infra/http/routes/auth.routes";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
@@ -24,24 +24,8 @@ export async function buildApp() {
     Sentry.setupFastifyErrorHandler(app);
   }
 
-  app.setErrorHandler<FastifyError>((error, _request, reply) => {
-    if (error instanceof ZodError) {
-      return reply.status(400).send({
-        message: "Validation error",
-        issues: error.issues.map((issue) => ({
-          path: issue.path.join("."),
-          code: issue.code,
-          message: issue.message,
-        })),
-      });
-    }
-
-    const statusCode =
-      typeof error.statusCode === "number" && error.statusCode >= 400 ? error.statusCode : 500;
-
-    return reply.status(statusCode).send({
-      message: statusCode >= 500 ? "Internal server error" : error.message,
-    });
+  app.setErrorHandler<FastifyError>((error, request, reply) => {
+    return handleError(error, request, reply);
   });
 
   await app.register(multipart, {

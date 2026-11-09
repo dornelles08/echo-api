@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { makeFetchTagsUseCase } from "../../../factories/media/fetch-tags.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 import { TagPresenter } from "../../presenters/tag.presenter";
 
 export async function fetchTags(request: FastifyRequest, reply: FastifyReply) {
@@ -12,7 +13,7 @@ export async function fetchTags(request: FastifyRequest, reply: FastifyReply) {
   });
 
   if (result.isLeft()) {
-    return reply.status(500).send();
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { tags } = result.value;

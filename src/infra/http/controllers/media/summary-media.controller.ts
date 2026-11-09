@@ -1,12 +1,8 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { summaryMediaBodySchema, summaryMediaParamsSchema } from "../../../../contracts";
-import {
-  EntityNotFoundError,
-  InvalidStatusError,
-  SummaryAttemptsExceededError,
-} from "../../../../domain";
 import { makeSummaryMediaUseCase } from "../../../factories/media/summary-media.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
 export async function summaryMedia(request: FastifyRequest, reply: FastifyReply) {
   const { mediaId } = summaryMediaParamsSchema.parse(request.params);
@@ -21,18 +17,7 @@ export async function summaryMedia(request: FastifyRequest, reply: FastifyReply)
   });
 
   if (result.isLeft()) {
-    const error = result.value;
-
-    switch (error.constructor) {
-      case EntityNotFoundError:
-        return reply.status(404).send({ error: error.message });
-      case InvalidStatusError:
-        return reply.status(400).send({ error: error.message });
-      case SummaryAttemptsExceededError:
-        return reply.status(409).send({ error: error.message });
-      default:
-        return reply.status(500).send({ error: "Internal server error" });
-    }
+    return handleUseCaseError(result.value, request, reply);
   }
 
   return reply.status(202).send({

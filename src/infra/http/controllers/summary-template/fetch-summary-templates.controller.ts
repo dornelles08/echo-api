@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { getSummaryTemplatesResponseSchema } from "../../../../contracts/index";
 import { makeFetchSummaryTemplates } from "../../../factories/summary-template/fetch-summary-templates.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
 export async function fetchSummaryTemplates(_request: FastifyRequest, reply: FastifyReply) {
   const fetchSummaryTemplatesUseCase = makeFetchSummaryTemplates();
@@ -8,7 +9,7 @@ export async function fetchSummaryTemplates(_request: FastifyRequest, reply: Fas
   const result = await fetchSummaryTemplatesUseCase.execute();
 
   if (result.isLeft()) {
-    return reply.status(500).send();
+    return handleUseCaseError(result.value, _request, reply);
   }
 
   const { summaryTemplate } = result.value;

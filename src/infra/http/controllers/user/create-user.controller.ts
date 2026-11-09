@@ -1,8 +1,8 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { registerSchema } from "../../../../contracts";
-import { EmailAlreadyExistsError } from "../../../../domain";
 import { makeCreateUserUseCase } from "../../../factories/user/create-user.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
 export async function createUser(request: FastifyRequest, reply: FastifyReply) {
   const { name, email, password } = registerSchema.parse(request.body);
@@ -14,13 +14,7 @@ export async function createUser(request: FastifyRequest, reply: FastifyReply) {
   });
 
   if (result.isLeft()) {
-    const error = result.value;
-
-    if (error instanceof EmailAlreadyExistsError) {
-      return reply.status(409).send({ message: error.message });
-    }
-
-    return reply.status(500).send({ message: "Internal server error" });
+    return handleUseCaseError(result.value, request, reply);
   }
 
   return reply.status(201).send();

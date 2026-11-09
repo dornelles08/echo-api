@@ -1,10 +1,10 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { loginSchema } from "../../../../contracts";
-import { EntityNotFoundError, WrongPasswordError } from "../../../../domain";
 import { env } from "../../../env";
 import { makeAuthenticateUserUseCase } from "../../../factories/user/authenticate-user.factory";
 import { refreshCookieOptions } from "../../cookies";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
 export async function authenticateUser(request: FastifyRequest, reply: FastifyReply) {
   const { email, password } = loginSchema.parse(request.body);
@@ -15,19 +15,7 @@ export async function authenticateUser(request: FastifyRequest, reply: FastifyRe
   });
 
   if (result.isLeft()) {
-    const error = result.value;
-
-    switch (error.constructor) {
-      case EntityNotFoundError:
-      case WrongPasswordError:
-        return reply.status(401).send({
-          message: "Invalid email or password.",
-        });
-      default:
-        return reply.status(500).send({
-          message: "Internal server error.",
-        });
-    }
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { user } = result.value;

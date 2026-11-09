@@ -1,11 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import {
-  EntityNotFoundError,
-  PlanLimitExceededError,
-  VideoNotAllowedError,
-} from "../../../../domain";
 import { makeUploadFileUseCase } from "../../../factories/file/upload-file.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
 export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
   const userId = request.user.sub;
@@ -13,7 +9,11 @@ export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
   const data = await request.file();
 
   if (!data) {
-    return reply.status(400).send({ error: "No file uploaded" });
+    return reply.status(400).send({
+      statusCode: 400,
+      error: "VALIDATION_ERROR",
+      message: "No file uploaded",
+    });
   }
 
   const buffer = await data.toBuffer();
@@ -25,18 +25,7 @@ export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
   });
 
   if (result.isLeft()) {
-    const error = result.value;
-
-    switch (error.constructor) {
-      case VideoNotAllowedError:
-        return reply.status(403).send({ error: error.message });
-      case PlanLimitExceededError:
-        return reply.status(402).send({ error: error.message });
-      case EntityNotFoundError:
-        return reply.status(404).send({ error: error.message });
-      default:
-        return reply.status(500).send({ error: "Internal server error" });
-    }
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { file, duration } = result.value;
