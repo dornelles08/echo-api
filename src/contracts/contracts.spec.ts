@@ -12,30 +12,30 @@ import { fetchPlansQuerySchema } from "./plan/schemas";
 
 describe("auth schemas", () => {
   it("loginSchema accepts a valid payload", () => {
-    expect(loginSchema.parse({ email: "a@b.com", password: "123456" })).toEqual({
+    expect(loginSchema.parse({ email: "a@b.com", password: "senha1234" })).toEqual({
       email: "a@b.com",
-      password: "123456",
+      password: "senha1234",
     });
   });
 
   it("loginSchema rejects invalid email and short passwords", () => {
-    expect(() => loginSchema.parse({ email: "nope", password: "123456" })).toThrow();
+    expect(() => loginSchema.parse({ email: "nope", password: "senha1234" })).toThrow();
     expect(() => loginSchema.parse({ email: "a@b.com", password: "12345" })).toThrow();
     expect(() => loginSchema.parse({})).toThrow();
   });
 
   it("registerSchema accepts a valid payload", () => {
-    expect(registerSchema.parse({ name: "John", email: "a@b.com", password: "123456" }).name).toBe(
-      "John",
-    );
+    expect(
+      registerSchema.parse({ name: "John", email: "a@b.com", password: "senha1234" }).name,
+    ).toBe("John");
   });
 
   it("registerSchema rejects empty name and invalid email", () => {
     expect(() =>
-      registerSchema.parse({ name: "", email: "a@b.com", password: "123456" }),
+      registerSchema.parse({ name: "", email: "a@b.com", password: "senha1234" }),
     ).toThrow();
     expect(() =>
-      registerSchema.parse({ name: "John", email: "nope", password: "123456" }),
+      registerSchema.parse({ name: "John", email: "nope", password: "senha1234" }),
     ).toThrow();
   });
 });

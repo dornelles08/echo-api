@@ -21,8 +21,8 @@ export class InMemoryMediaRepository implements MediaRepository {
     }
   }
 
-  async delete(id: string): Promise<void> {
-    this.items = this.items.filter((item) => item.id !== id);
+  async delete(id: string, userId: string): Promise<void> {
+    this.items = this.items.filter((item) => item.id !== id && item.userId !== userId);
   }
 
   async findAll(

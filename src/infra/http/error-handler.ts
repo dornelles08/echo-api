@@ -99,7 +99,7 @@ export function handleError(
     url: request.url,
     params: request.params,
     query: request.query,
-    body: request.body,
+    // O body não é logado para evitar vazar credenciais (senhas, tokens, etc.).
     userId: (request.user as { sub?: string } | undefined)?.sub,
     validationIssues: details,
     stack: appError.stack,

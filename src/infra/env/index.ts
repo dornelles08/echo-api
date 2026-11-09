@@ -14,9 +14,12 @@ const envSchema = z.object({
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.coerce.number().default(6379),
 
-  JWT_SECRET: z.string(),
+  JWT_SECRET: z.string().default("dev-jwt-secret-change-me"),
   JWT_EXPIRES_IN: z.string().default("1h"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
+
+  BETTER_AUTH_SECRET: z.string().default("dev-better-auth-secret-change-me-32chars!!"),
+  BETTER_AUTH_URL: z.string().default("http://localhost:3333"),
 
   STORAGE_TYPE: z.enum(["local", "s3"]).default("s3"),
   UPLOAD_DIR: z.string().default("../uploads"),

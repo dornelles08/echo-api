@@ -25,7 +25,7 @@ function db(): postgres.Sql {
 export async function resetTestDb(): Promise<void> {
   const sql = db();
 
-  await sql`TRUNCATE TABLE medias, usage_counters, users, summary_templates, plans RESTART IDENTITY CASCADE`;
+  await sql`TRUNCATE TABLE medias, usage_counters, users, summary_templates, plans, revoked_refresh_tokens RESTART IDENTITY CASCADE`;
 
   for (const plan of plansSeed) {
     await sql`

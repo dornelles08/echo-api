@@ -35,7 +35,7 @@ export class DeleteMediaUseCase {
     // Remove do banco. Não toca no usage_counters: os minutos consumidos
     // pela transcrição desta mídia não são devolvidos, evitando que o
     // usuário crie e apague mídias para burlar o limite mensal.
-    await this.mediaRepository.delete(mediaId);
+    await this.mediaRepository.delete(mediaId, userId);
 
     return right({ mediaId });
   }

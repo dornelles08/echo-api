@@ -1,8 +1,11 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { createWriteStream } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
@@ -17,7 +20,7 @@ import type { StorageService } from "../services/storage.service";
 interface UploadFileUseCaseRequest {
   userId: string;
   filename: string;
-  content: Buffer | Uint8Array;
+  content: Buffer | Uint8Array | Readable;
 }
 
 type UploadFileUseCaseResponse = Either<
@@ -32,16 +35,21 @@ export function isVideoFile(filename: string): boolean {
   return VIDEO_EXTENSIONS.some((extension) => lowerFilename.endsWith(extension));
 }
 
-export async function getMediaDurationSeconds(content: Buffer | Uint8Array): Promise<number> {
-  const input = Buffer.isBuffer(content) ? content : Buffer.from(content);
-
-  // ffprobe requires a seekable input (e.g. MP4 with moov atom at the end),
-  // so probe a temporary file instead of piping via stdin.
+export async function getMediaDurationSeconds(
+  content: Buffer | Uint8Array | Readable,
+): Promise<number> {
+  // ffprobe precisa de um arquivo seekable, então gravamos um temp file a
+  // partir do conteúdo (buffer ou stream) antes de sondar a duração.
   const tmpDir = await mkdtemp(join(tmpdir(), "echo-probe-"));
   const tmpFile = join(tmpDir, `media-${randomUUID()}`);
 
   try {
-    await writeFile(tmpFile, input);
+    if (Buffer.isBuffer(content) || content instanceof Uint8Array) {
+      await writeFile(tmpFile, content);
+    } else {
+      const stream = createWriteStream(tmpFile);
+      await pipeline(content, stream);
+    }
 
     return await probeDuration(tmpFile);
   } finally {
@@ -129,6 +137,9 @@ export class UploadFileUseCase {
         url: stored.url,
         key: stored.key,
       });
+
+      // Debita os minutos do plano após o upload bem-sucedido.
+      await this.usageCounterRepository.increment(usageCounter.id, durationMinutes);
 
       return right({ file, duration: durationSeconds });
     } catch (error) {

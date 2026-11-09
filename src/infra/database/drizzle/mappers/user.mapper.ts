@@ -7,7 +7,7 @@ export namespace UserMapper {
       {
         name: row.name,
         email: row.email,
-        passwordHash: row.password,
+        passwordHash: row.password ?? undefined,
         planId: row.planId,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,

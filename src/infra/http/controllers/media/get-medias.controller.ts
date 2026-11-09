@@ -1,8 +1,8 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { getMediaParamsSchema } from "../../../../contracts";
-import { EntityNotFoundError } from "../../../../domain";
 import { makeGetMediaUseCase } from "../../../factories/media/get-media.factory";
+import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 import { MediaPresenter } from "../../presenters/media.presenter";
 
 export async function getMedia(request: FastifyRequest, reply: FastifyReply) {
@@ -16,11 +16,7 @@ export async function getMedia(request: FastifyRequest, reply: FastifyReply) {
   });
 
   if (result.isLeft()) {
-    if (result.value instanceof EntityNotFoundError) {
-      return reply.status(404).send({ error: result.value.message });
-    }
-
-    return reply.status(500).send({ error: "Internal server error" });
+    return handleUseCaseError(result.value, request, reply);
   }
 
   const { media } = result.value;

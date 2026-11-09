@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 
 import { fetchSummaryTemplates } from "../controllers/summary-template/fetch-summary-templates.controller";
-import { verifyJwt } from "../middlewares/verify-jwt";
+import { verifySession } from "../middlewares/verify-session";
 
 export async function summaryTemplateRoutes(app: FastifyInstance) {
-  app.get("/summary-templates", { onRequest: [verifyJwt] }, fetchSummaryTemplates);
+  app.get("/summary-templates", { onRequest: [verifySession] }, fetchSummaryTemplates);
 }

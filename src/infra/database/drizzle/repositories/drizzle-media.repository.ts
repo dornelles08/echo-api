@@ -88,8 +88,8 @@ export class DrizzleMediaRepository implements MediaRepository {
       .where(eq(medias.id, media.id));
   }
 
-  async delete(id: string): Promise<void> {
-    await db.delete(medias).where(eq(medias.id, id));
+  async delete(id: string, userId: string): Promise<void> {
+    await db.delete(medias).where(and(eq(medias.id, id), eq(medias.userId, userId)));
   }
 
   async findUserTags(userId: string): Promise<string[]> {

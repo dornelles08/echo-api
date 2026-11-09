@@ -1,20 +1,23 @@
+import fastifyCompress from "@fastify/compress";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
-import fastifyJwt from "@fastify/jwt";
 import multipart from "@fastify/multipart";
+import fastifyRateLimit from "@fastify/rate-limit";
 import * as Sentry from "@sentry/node";
 import fastify, { type FastifyError } from "fastify";
 
 import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { handleError } from "./infra/http/error-handler";
 import { authRoutes } from "./infra/http/routes/auth.routes";
+import { authLogoutRoutes } from "./infra/http/routes/auth-logout.route";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
 import { planRoutes } from "./infra/http/routes/plan.routes";
 import { summaryTemplateRoutes } from "./infra/http/routes/summary-template.routes";
 import { tagRoutes } from "./infra/http/routes/tag.routes";
 import { userRoutes } from "./infra/http/routes/user.routes";
+import { checkHealth } from "./infra/libs/health";
 import { isSentryEnabled } from "./infra/libs/sentry";
 
 export async function buildApp() {
@@ -34,34 +37,47 @@ export async function buildApp() {
     },
   });
 
-  await app.register(fastifyJwt, {
-    secret: env.JWT_SECRET,
-    cookie: {
-      cookieName: "refreshToken",
-      signed: false,
-    },
-    sign: {
-      expiresIn: env.JWT_EXPIRES_IN,
-    },
-  });
-
   await app.register(fastifyCors, {
     origin: (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
     credentials: true,
   });
 
-  await app.register(fastifyHelmet);
-  await app.register(fastifyCookie);
+  // Rate limiting global: 60 requisições por minuto por IP. Rotas de auth
+  // podem receber um limite ainda mais rígido se necessário.
+  await app.register(fastifyRateLimit, {
+    max: 60,
+    timeWindow: 60 * 1000,
+    allowList: [], // em produção, considerar permitir IPs internos/proxies
+  });
 
-  app.get("/health", () => ({ status: "ok" }));
+  await app.register(fastifyCompress, {
+    threshold: 1024, // comprimir acima de 1 KB
+  });
+
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  });
+  await app.register(fastifyCookie);
 
   await app.register(fileRoutes, { prefix: "/files" });
   await app.register(mediaRoutes, { prefix: "/medias" });
   await app.register(userRoutes);
   await app.register(authRoutes);
+  await app.register(authLogoutRoutes);
   await app.register(tagRoutes, { prefix: "/tags" });
   await app.register(summaryTemplateRoutes);
   await app.register(planRoutes, { prefix: "/plans" });
+
+  app.get("/health", async () => {
+    const report = await checkHealth();
+    return report;
+  });
 
   return app;
 }
