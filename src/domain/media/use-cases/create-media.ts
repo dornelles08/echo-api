@@ -44,6 +44,10 @@ export class CreateMediaUseCase {
       duration,
       tags,
       userId,
+      // Os minutos já foram debitados no upload (UploadFileUseCase).
+      // Marca usageDebitedAt para que o worker não debita novamente
+      // ao finalizar a transcrição (evita dupla contagem).
+      usageDebitedAt: new Date(),
     });
 
     const createdMedia = await this.mediaRepository.create(media);

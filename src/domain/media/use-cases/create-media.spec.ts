@@ -86,6 +86,22 @@ describe("Create Media", () => {
     }
   });
 
+  it("should set usageDebitedAt so the worker does not debit usage again", async () => {
+    const result = await sut.execute({
+      filename: "test-audio.mp3",
+      url: "http://example.com/test-audio.mp3",
+      type: "audio",
+      language: "pt-BR",
+      duration: 10,
+      userId: "user-123",
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.media.usageDebitedAt).toBeInstanceOf(Date);
+    }
+  });
+
   it("should publish a transcription job with the media id, url and storageKey", async () => {
     const result = await sut.execute({
       filename: "test-audio.mp3",
