@@ -26,7 +26,11 @@ describe("POST /users", () => {
     });
 
     expect(response.statusCode).toBe(409);
-    expect(response.json()).toEqual({ message: expect.any(String) });
+    expect(response.json()).toMatchObject({
+      statusCode: 409,
+      error: "EMAIL_ALREADY_EXISTS",
+      message: expect.any(String),
+    });
   });
 
   it("returns 400 for an invalid email", async () => {
@@ -104,7 +108,11 @@ describe("POST /authenticate", () => {
     });
 
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toEqual({ message: "Invalid email or password." });
+    expect(response.json()).toMatchObject({
+      statusCode: 401,
+      error: "INVALID_CREDENTIALS",
+      message: "Invalid email or password.",
+    });
   });
 
   it("returns 401 for an unknown email", async () => {
@@ -115,7 +123,11 @@ describe("POST /authenticate", () => {
     });
 
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toEqual({ message: "Invalid email or password." });
+    expect(response.json()).toMatchObject({
+      statusCode: 401,
+      error: "INVALID_CREDENTIALS",
+      message: "Invalid email or password.",
+    });
   });
 
   it("returns 400 for an invalid payload", async () => {

@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { loginSchema } from "../../../../contracts";
+import { EntityNotFoundError, WrongPasswordError } from "../../../../domain";
 import { env } from "../../../env";
 import { makeAuthenticateUserUseCase } from "../../../factories/user/authenticate-user.factory";
 import { refreshCookieOptions } from "../../cookies";
@@ -15,7 +16,19 @@ export async function authenticateUser(request: FastifyRequest, reply: FastifyRe
   });
 
   if (result.isLeft()) {
-    return handleUseCaseError(result.value, request, reply);
+    const error = result.value;
+
+    // Never reveal whether the email exists: both a missing user and a wrong
+    // password return the same generic 401.
+    if (error instanceof EntityNotFoundError || error instanceof WrongPasswordError) {
+      return reply.status(401).send({
+        statusCode: 401,
+        error: "INVALID_CREDENTIALS",
+        message: "Invalid email or password.",
+      });
+    }
+
+    return handleUseCaseError(error, request, reply);
   }
 
   const { user } = result.value;

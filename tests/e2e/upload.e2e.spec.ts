@@ -101,7 +101,11 @@ describe("POST /files/upload", () => {
     });
 
     expect(response.statusCode).toBe(403);
-    expect(response.json()).toEqual({ error: expect.any(String) });
+    expect(response.json()).toMatchObject({
+      statusCode: 403,
+      error: expect.any(String),
+      message: expect.any(String),
+    });
   });
 
   it("allows video uploads once the user's plan allows videos", async () => {
@@ -135,7 +139,11 @@ describe("POST /files/upload", () => {
     });
 
     expect(response.statusCode).toBe(402);
-    expect(response.json()).toEqual({ error: expect.any(String) });
+    expect(response.json()).toMatchObject({
+      statusCode: 402,
+      error: expect.any(String),
+      message: expect.any(String),
+    });
   });
 
   it("accepts a file with unreadable content as duration 0", async () => {

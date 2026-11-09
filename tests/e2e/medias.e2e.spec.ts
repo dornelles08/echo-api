@@ -369,7 +369,11 @@ describe("POST /medias/:mediaId/summary", () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.json()).toEqual({ error: expect.stringContaining("Invalid status") });
+    expect(response.json()).toMatchObject({
+      statusCode: 400,
+      error: "INVALID_STATUS",
+      message: expect.any(String),
+    });
   });
 
   it("returns 202 and publishes a summary job with the composed prompt", async () => {
@@ -419,7 +423,11 @@ describe("POST /medias/:mediaId/summary", () => {
     });
 
     expect(second.statusCode).toBe(409);
-    expect(second.json()).toEqual({ error: expect.any(String) });
+    expect(second.json()).toMatchObject({
+      statusCode: 409,
+      error: expect.any(String),
+      message: expect.any(String),
+    });
   });
 
   it("returns 404 for an unknown media", async () => {

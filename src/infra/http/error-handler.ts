@@ -25,10 +25,32 @@ interface NormalizedError {
 /**
  * Extracts an operational AppError from an unknown value, falling back to a
  * generic 500 when the error is unexpected.
+ *
+ * Errors that already carry an HTTP statusCode (ex.: Fastify's bad request for
+ * a malformed JSON body) are preserved and treated as operational.
  */
 export function normalizeError(error: unknown): NormalizedError {
   if (error instanceof AppError) {
     return { error };
+  }
+
+  // Fastify built-in errors (ex.: 400 for malformed JSON body) keep their
+  // status code and are treated as operational.
+  const errorWithStatus = error as { statusCode?: number } | undefined;
+  if (
+    errorWithStatus &&
+    typeof errorWithStatus.statusCode === "number" &&
+    errorWithStatus.statusCode >= 400 &&
+    errorWithStatus.statusCode < 500
+  ) {
+    return {
+      error: new AppError(
+        error instanceof Error ? error.message : String(error),
+        errorWithStatus.statusCode,
+        "ERROR",
+        true,
+      ),
+    };
   }
 
   // Zod validation errors raised by Fastify (schema.parse in controllers).
