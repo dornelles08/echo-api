@@ -1,6 +1,7 @@
-export class PlanLimitExceededError extends Error {
+import { AppError } from "./app-error";
+
+export class PlanLimitExceededError extends AppError {
   constructor(message = "Limite de minutos do plano excedido") {
-    super(message);
-    this.name = "PlanLimitExceededError";
+    super(message, 402, "PLAN_LIMIT_EXCEEDED");
   }
 }

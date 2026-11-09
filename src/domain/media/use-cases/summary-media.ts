@@ -47,7 +47,11 @@ export class SummaryMediaUseCase {
     }
 
     if (!media.transcription) {
-      return left(new InvalidStatusError(media.status, "summary"));
+      return left(
+        new InvalidStatusError(
+          `Media is in "${media.status}" status, transcription is required before summary.`,
+        ),
+      );
     }
 
     const userWithPlan = await this.userRepository.findDetailsById(userId);

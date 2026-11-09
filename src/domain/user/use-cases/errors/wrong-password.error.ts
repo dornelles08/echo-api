@@ -1,6 +1,7 @@
-export class WrongPasswordError extends Error {
+import { AppError } from "../../../errors/app-error";
+
+export class WrongPasswordError extends AppError {
   constructor() {
-    super("Wrong Password Error");
-    this.name = "WrongPasswordError";
+    super("Wrong password.", 401, "WRONG_PASSWORD");
   }
 }
