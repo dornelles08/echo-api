@@ -39,6 +39,11 @@ export class UsageCounter extends Entity<UsageCounterProps> {
     this.props.updatedAt = new Date();
   }
 
+  subtractMinutes(minutes: number) {
+    this.props.minutesUsed = Math.max(0, this.props.minutesUsed - minutes);
+    this.props.updatedAt = new Date();
+  }
+
   isExpired(): boolean {
     return new Date() > this.props.cycleEnd;
   }

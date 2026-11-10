@@ -188,6 +188,7 @@ export const medias = pgTable(
       .default(sql`'{}'::text[]`),
     summaryPrompt: text("summary_prompt"),
     summaryAttempts: integer("summary_attempts").notNull().default(0),
+    transcriptionAttempts: integer("transcription_attempts").notNull().default(0),
     usageDebitedAt: timestamp("usage_debited_at", { withTimezone: true }),
     tags: text("tags")
       .array()

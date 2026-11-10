@@ -14,6 +14,7 @@ export interface MediaProps {
   summary?: string[];
   summaryPrompt?: string;
   summaryAttempts?: number;
+  transcriptionAttempts?: number;
   segments?: Segment[];
   status?: Status;
   tags?: string[];
@@ -76,6 +77,10 @@ export class Media extends Entity<MediaProps> {
     return this.props.summaryAttempts ?? 0;
   }
 
+  get transcriptionAttempts() {
+    return this.props.transcriptionAttempts ?? 0;
+  }
+
   get segments() {
     return this.props.segments;
   }
@@ -121,6 +126,11 @@ export class Media extends Entity<MediaProps> {
     this.touch();
   }
 
+  incrementTranscriptionAttempts() {
+    this.props.transcriptionAttempts = (this.props.transcriptionAttempts ?? 0) + 1;
+    this.touch();
+  }
+
   private touch() {
     this.props.updatedAt = new Date();
   }
@@ -132,6 +142,7 @@ export class Media extends Entity<MediaProps> {
         tags: props.tags ?? [],
         status: props.status ?? "pending_transcription",
         summaryAttempts: props.summaryAttempts ?? 0,
+        transcriptionAttempts: props.transcriptionAttempts ?? 0,
         createdAt: props.createdAt ?? new Date(),
         updatedAt: props.updatedAt ?? new Date(),
       },

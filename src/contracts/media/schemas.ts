@@ -51,6 +51,12 @@ export const summaryMediaParamsSchema = z.object({
 
 export type SummaryMediaParams = z.infer<typeof summaryMediaParamsSchema>;
 
+export const retryTranscriptionParamsSchema = z.object({
+  mediaId: z.uuid(),
+});
+
+export type RetryTranscriptionParams = z.infer<typeof retryTranscriptionParamsSchema>;
+
 export const summaryMediaBodySchema = z.object({
   prompt: z.string().min(1).max(2000),
   instructions: z.string().max(2000).optional(),

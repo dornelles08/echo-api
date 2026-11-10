@@ -10,4 +10,8 @@ export interface UsageCounterRepository {
    * contrário.
    */
   reserveMinutes(userId: string, minutes: number): Promise<boolean>;
+  /**
+   * Devolve minutos ao counter do usuário (reembolso). Não decrementa abaixo de zero.
+   */
+  decrement(userId: string, minutes: number): Promise<void>;
 }

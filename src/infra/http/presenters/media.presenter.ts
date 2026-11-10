@@ -16,6 +16,7 @@ export interface MediaPresenterResponse {
   summary: string[];
   summaryPrompt?: string;
   summaryAttempts?: number;
+  transcriptionAttempts?: number;
   status: ContractStatus;
   tags: string[];
   segments: Segment[];
@@ -48,6 +49,7 @@ export namespace MediaPresenter {
       summary: media.summary ?? [],
       summaryPrompt: media.summaryPrompt,
       summaryAttempts: media.summaryAttempts,
+      transcriptionAttempts: media.transcriptionAttempts,
       status: (media.status ?? "pending_transcription") as ContractStatus,
       tags: media.tags ?? [],
       segments: media.segments ?? [],

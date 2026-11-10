@@ -104,4 +104,14 @@ export class DrizzleUsageCounterRepository implements UsageCounterRepository {
 
     return UsageCounterMapper.toDomain(row);
   }
+
+  async decrement(userId: string, minutes: number): Promise<void> {
+    await db
+      .update(usageCounters)
+      .set({
+        minutesUsed: sql`GREATEST(${usageCounters.minutesUsed} - ${minutes}, 0)`,
+        updatedAt: new Date(),
+      })
+      .where(eq(usageCounters.userId, userId));
+  }
 }
