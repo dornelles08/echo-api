@@ -43,6 +43,8 @@ export async function buildApp() {
         ? true
         : (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
     credentials: true,
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Authorization", "Content-Type"],
   });
 
   // Rate limiting global: 60 requisições por minuto por IP. Rotas de auth
