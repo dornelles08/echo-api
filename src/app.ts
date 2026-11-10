@@ -9,6 +9,7 @@ import fastify, { type FastifyError } from "fastify";
 
 import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { handleError } from "./infra/http/error-handler";
+import traceIdMiddleware from "./infra/http/middlewares/trace-id.middleware";
 import { authRoutes } from "./infra/http/routes/auth.routes";
 import { authLogoutRoutes } from "./infra/http/routes/auth-logout.route";
 import { authProvidersRoutes } from "./infra/http/routes/auth-providers.route";
@@ -22,7 +23,9 @@ import { checkHealth } from "./infra/libs/health";
 import { isSentryEnabled } from "./infra/libs/sentry";
 
 export async function buildApp() {
-  const app = fastify({ logger: env.NODE_ENV !== "test" });
+  const app = fastify({
+    logger: env.NODE_ENV !== "test",
+  });
 
   if (isSentryEnabled) {
     Sentry.setupFastifyErrorHandler(app);
@@ -31,6 +34,8 @@ export async function buildApp() {
   app.setErrorHandler<FastifyError>((error, request, reply) => {
     return handleError(error, request, reply);
   });
+
+  await app.register(traceIdMiddleware);
 
   await app.register(multipart, {
     limits: {

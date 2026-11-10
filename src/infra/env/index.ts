@@ -42,6 +42,9 @@ const envSchema = z.object({
   MINIO_REGION: z.string().default("us-east-1"),
 
   SENTRY_DSN: z.string().default(""),
+  SENTRY_DSN_API: z.string().default(""),
+  LOKI_URL: z.string().default("http://localhost:3100"),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
 
   // Cron pattern for the expired media files cleanup job (node-cron).
   // Set to "disabled" to turn the job off.

@@ -1,7 +1,22 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Environment
 .env
 .env.local
+
+# Logs
 *.log
-coverage
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store

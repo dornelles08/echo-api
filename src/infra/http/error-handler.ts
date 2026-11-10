@@ -94,6 +94,7 @@ export function handleError(
     statusCode: appError.statusCode,
     code: appError.code,
     isOperational: appError.isOperational,
+    traceId: request.id,
     requestId: request.id,
     method: request.method,
     url: request.url,

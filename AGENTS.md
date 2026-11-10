@@ -182,3 +182,11 @@ Hooks (husky): pre-commit `lint`+`typecheck`; pre-push `test`.
 - Rate limit global 60 req/min/IP.
 - CORS: em dev `origin: true`; em prod valida contra `CLIENT_ORIGIN` (suporta wildcard `*`).
 - Compose profile `full` sobe worker/web com `WHISPER_MODE=fake` e `SUMMARY_MODE=fake`.
+
+### Observabilidade
+
+- **Sentry**: configurado em `infra/libs/sentry.ts`. Ativo apenas quando `SENTRY_DSN_API` está preenchido. Captura erros inesperados (5xx) e exceções não tratadas.
+- **Logger estruturado**: `infra/libs/logger.ts` cria um logger Pino. Em produção com `LOKI_URL` definido, envia logs via HTTP para o Loki. Em desenvolvimento, imprime em stdout (usar `pino-pretty` via script `dev`).
+- **Correlation ID**: middleware `infra/http/middlewares/trace-id.middleware.ts`. Lê o header `X-Trace-ID` da requisição (se enviado pelo front) ou usa o `request.id` do Fastify. Expõe o mesmo ID no header de resposta `X-Trace-ID` para rastreamento ponta a ponta (front → back → worker).
+- **Logs de erro**: `infra/http/error-handler.ts` inclui `traceId`, `requestId`, `userId`, `method`, `url`, `params`, `query` e `stack` (apenas em erros inesperados). Nunca loga o body da requisição.
+- **Env vars**: `SENTRY_DSN_API`, `LOKI_URL`, `LOG_LEVEL` (valores: fatal, error, warn, info, debug, trace).
