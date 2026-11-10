@@ -21,6 +21,12 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().default("dev-better-auth-secret-change-me-32chars!!"),
   BETTER_AUTH_URL: z.string().default("http://localhost:3333"),
 
+  // Providers sociais (opcionais — login só aparece no front se configurados).
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
+
   STORAGE_TYPE: z.enum(["local", "s3"]).default("s3"),
   UPLOAD_DIR: z.string().default("../uploads"),
 

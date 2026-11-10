@@ -11,6 +11,7 @@ import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { handleError } from "./infra/http/error-handler";
 import { authRoutes } from "./infra/http/routes/auth.routes";
 import { authLogoutRoutes } from "./infra/http/routes/auth-logout.route";
+import { authProvidersRoutes } from "./infra/http/routes/auth-providers.route";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
 import { planRoutes } from "./infra/http/routes/plan.routes";
@@ -73,6 +74,7 @@ export async function buildApp() {
   await app.register(fileRoutes, { prefix: "/files" });
   await app.register(mediaRoutes, { prefix: "/medias" });
   await app.register(userRoutes);
+  await app.register(authProvidersRoutes);
   await app.register(authRoutes);
   await app.register(authLogoutRoutes);
   await app.register(tagRoutes, { prefix: "/tags" });
