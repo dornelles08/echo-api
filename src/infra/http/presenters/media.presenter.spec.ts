@@ -32,6 +32,7 @@ describe("MediaPresenter.toHTTP", () => {
       summary: [],
       summaryPrompt: undefined,
       summaryAttempts: 0,
+      transcriptionAttempts: 0,
       status: "pending_transcription",
       tags: [],
       segments: [],
