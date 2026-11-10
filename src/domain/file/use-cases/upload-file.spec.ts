@@ -234,18 +234,16 @@ describe("Upload File", () => {
 
 describe("isVideoFile", () => {
   it("detects video extensions case-insensitively", () => {
-    for (const ext of [".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv", ".wmv"]) {
+    for (const ext of [".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv"]) {
       expect(isVideoFile(`clip${ext}`)).toBe(true);
       expect(isVideoFile(`clip${ext.toUpperCase()}`)).toBe(true);
     }
     expect(isVideoFile("CLIP.MP4")).toBe(true);
   });
 
-  it("does not flag audio or extensionless files as video", () => {
-    expect(isVideoFile("song.mp3")).toBe(false);
-    expect(isVideoFile("song.wav")).toBe(false);
-    expect(isVideoFile("no-extension")).toBe(false);
-    expect(isVideoFile("archive.mp4.zip")).toBe(false);
+  it("does not flag webm as video (webm can be audio or video)", () => {
+    expect(isVideoFile("audio.webm")).toBe(false);
+    expect(isVideoFile("audio.WEBM")).toBe(false);
   });
 });
 

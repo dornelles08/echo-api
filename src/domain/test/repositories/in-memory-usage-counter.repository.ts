@@ -40,4 +40,11 @@ export class InMemoryUsageCounterRepository implements UsageCounterRepository {
     if (counter.isExpired()) return null;
     return counter;
   }
+
+  async decrement(userId: string, minutes: number): Promise<void> {
+    const counter = this.counters.get(userId);
+    if (counter) {
+      counter.subtractMinutes(minutes);
+    }
+  }
 }

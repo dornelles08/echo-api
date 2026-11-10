@@ -80,6 +80,7 @@ export async function uploadFile(request: FastifyRequest, reply: FastifyReply) {
     userId,
     content: data.file,
     filename: data.filename,
+    contentType: data.mimetype,
   });
 
   if (result.isLeft()) {
