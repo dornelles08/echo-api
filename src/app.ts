@@ -10,9 +10,9 @@ import fastify, { type FastifyError } from "fastify";
 import { corsOrigins, env, isCorsOriginAllowed } from "./infra/env";
 import { handleError } from "./infra/http/error-handler";
 import traceIdMiddleware from "./infra/http/middlewares/trace-id.middleware";
-import { authRoutes } from "./infra/http/routes/auth.routes";
 import { authLogoutRoutes } from "./infra/http/routes/auth-logout.route";
 import { authProvidersRoutes } from "./infra/http/routes/auth-providers.route";
+import { authRoutes } from "./infra/http/routes/auth.routes";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
 import { planRoutes } from "./infra/http/routes/plan.routes";
@@ -50,7 +50,7 @@ export async function buildApp() {
         : (origin, callback) => callback(null, isCorsOriginAllowed(origin, corsOrigins)),
     credentials: true,
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Authorization", "Content-Type"],
+    allowedHeaders: ["Authorization", "Content-Type", "X-Trace-ID"],
   });
 
   // Rate limiting global: 60 requisições por minuto por IP. Rotas de auth
