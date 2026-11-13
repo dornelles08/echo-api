@@ -11,8 +11,10 @@ export interface PlanSeed {
 }
 
 /**
- * Placeholder prices. Adjust them before going to production.
- * The `Free` plan is the one assigned to new users by the API.
+ * Catálogo congelado no PRD v1.2 (12/11/2026).
+ * Preços em reais; a versão em centavos (`price_cents`) e o vínculo com o
+ * Stripe entram na migration de billing (T1.1).
+ * O plano `Free` é o atribuído a novos usuários pela API.
  */
 export const plansSeed: PlanSeed[] = [
   {

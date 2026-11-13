@@ -1,0 +1,306 @@
+{
+  "task": "T0.3",
+  "executedAt": "2026-11-13T00:53:14.000Z",
+  "updatedAt": "2026-11-13T00:57:17.000Z",
+  "environment": {
+    "mode": "test",
+    "apiVersion": "default da conta (Stripe-Version não enviado)",
+    "harness": "scripts/spikes/stripe-spike.mjs",
+    "note": "IDs de test mode. Não reutilizar em produção."
+  },
+  "account": {
+    "id": "acct_1Rg5tYFTfV9EeZEH",
+    "type": "standard",
+    "country": "BR",
+    "default_currency": "brl",
+    "details_submitted": false,
+    "charges_enabled": false,
+    "payouts_enabled": false,
+    "requirements": {
+      "disabled_reason": null,
+      "currently_due": [],
+      "past_due": [],
+      "eventually_due": [],
+      "errors": []
+    },
+    "finding": "Onboarding nunca iniciado (`details_submitted: false`). Concluir o fluxo no Dashboard para habilitar cobranças em live; test mode continua funcionando."
+  },
+  "webhook": {
+    "secretSource": "stripe listen --print-secret",
+    "secretPresent": true,
+    "algorithm": "HMAC-SHA256 sobre `<t>.<payload>` com header `t=...,v1=...`",
+    "localVerification": {
+      "validSignature": true,
+      "tamperedPayload": false,
+      "wrongSecret": false
+    },
+    "forwarding": {
+      "command": "stripe listen --all-snapshot --forward-to localhost:4242/webhook",
+      "receiver": "servidor HTTP descartável que verifica assinatura sobre o raw body",
+      "eventsReceived": [
+        {
+          "id": "evt_1Ub93yFTfV9EeZEHJdjEk6C2",
+          "type": "checkout.session.completed",
+          "objectId": "cs_test_a0VddvwZ51SPpf8V4BAeI99qCfZhmoxePQbu01ZbSB4BRxZTwnpjuqhLkF",
+          "sessionStatus": "complete",
+          "paymentStatus": "paid",
+          "mode": "payment",
+          "clientReferenceId": "00000000-0000-0000-0000-000000000003",
+          "signatureValid": true
+        },
+        {
+          "id": "evt_1Ub94AFTfV9EeZEHi3V3VNL1",
+          "type": "invoice.paid",
+          "objectId": "in_1Ub946FTfV9EeZEHG8EliBTJ",
+          "status": "paid",
+          "signatureValid": true
+        }
+      ],
+      "deliveryCount": 1,
+      "note": "Uma entrega por evento com um único listener. Entregas duplicadas em run anterior eram listeners órfãos, não retry do Stripe."
+    },
+    "triggerLimitations": {
+      "checkoutSessionMode": "o fixture de `checkout.session.completed` cria `mode=payment`; forçar `mode=subscription` falha com `parameter_unknown: subscription`",
+      "invoiceFixture": "`stripe trigger invoice.paid` gera invoice avulsa, com `subscription: null`"
+    },
+    "note": "Segredo guardado em echo-api/.env (gitignored). O forward foi provado em um receiver descartável; o endpoint real nasce em T2.4."
+  },
+  "catalog": [
+    {
+      "code": "free",
+      "product": "prod_VcNUvQExq38CwS",
+      "price": "price_1Ub8j5FTfV9EeZEHcY3KqWrw",
+      "unit_amount": 0,
+      "currency": "brl",
+      "interval": "month",
+      "lookup_key": "free"
+    },
+    {
+      "code": "starter",
+      "product": "prod_VcNUCr42YnqZ2O",
+      "price": "price_1Ub8j7FTfV9EeZEHMLJ8ZmR7",
+      "unit_amount": 2990,
+      "currency": "brl",
+      "interval": "month",
+      "lookup_key": "starter"
+    },
+    {
+      "code": "pro",
+      "product": "prod_VcNUeD7oOoUYWj",
+      "price": "price_1Ub8j8FTfV9EeZEHcGz3YAaZ",
+      "unit_amount": 7990,
+      "currency": "brl",
+      "interval": "month",
+      "lookup_key": "pro"
+    },
+    {
+      "code": "business",
+      "product": "prod_VcNUfFTfV9EeZEHIrS5jbtx",
+      "price": "price_1Ub8jAFTfV9EeZEHIrS5jbtx",
+      "unit_amount": 19990,
+      "currency": "brl",
+      "interval": "month",
+      "lookup_key": "business"
+    }
+  ],
+  "clock": {
+    "id": "clock_1Ub8jvFTfV9EeZEHqqF2PJ1J",
+    "name": "Echo T0.3",
+    "startedAt": 1794531194,
+    "finalFrozenTime": 1803603194,
+    "cyclesAdvanced": 3
+  },
+  "customer": {
+    "id": "cus_VcNUQnJ4T2dD65",
+    "email": "t03@echo.test",
+    "test_clock": "clock_1Ub8jvFTfV9EeZEHqqF2PJ1J",
+    "metadata": {
+      "userId": "00000000-0000-0000-0000-000000000003"
+    }
+  },
+  "checkout": {
+    "id": "cs_test_a0Ug3MfRySYDSVTWzsn55v3bsGmuFdRX236UKcG8UxkaenrGjku1LpcXkF",
+    "mode": "subscription",
+    "payment_method_types": ["card"],
+    "createdStatus": "open",
+    "finalStatus": "expired",
+    "expiredByApi": true,
+    "expiredEvent": "evt_1Ub8n8FTfV9EeZEHBHZSpDAu",
+    "note": "Sessão criada com sucesso e expirada via API; nunca foi paga, então checkout.session.completed não foi emitido."
+  },
+  "subscription": {
+    "id": "sub_1Ub8kdFTfV9EeZEHoD19F2hs",
+    "item_id": "si_VcNVqO4t2nKzce",
+    "createdVia": "POST /v1/subscriptions com token de teste (tok_visa)",
+    "initialPrice": "price_1Ub8j7FTfV9EeZEHMLJ8ZmR7",
+    "initialAmount": 2990,
+    "finalPrice": "price_1Ub8j8FTfV9EeZEHcGz3YAaZ",
+    "finalAmount": 7990,
+    "finalStatus": "past_due",
+    "cancelAtPeriodEnd": false,
+    "billingMode": "classic",
+    "periods": [
+      {
+        "start": 1794531194,
+        "end": 1797123194,
+        "source": "subscription.items.data[0].current_period_start/end"
+      },
+      {
+        "start": 1797123194,
+        "end": 1799801594,
+        "source": "subscription.items.data[0].current_period_start/end"
+      },
+      {
+        "start": 1799801594,
+        "end": 1802479994,
+        "source": "subscription.items.data[0].current_period_start/end"
+      },
+      {
+        "start": 1802479994,
+        "end": 1804899194,
+        "source": "subscription.items.data[0].current_period_start/end"
+      }
+    ]
+  },
+  "invoices": [
+    {
+      "id": "in_1Ub8kdFTfV9EeZEHCQ9nsnjx",
+      "number": "MOVJ6QJT-0001",
+      "status": "paid",
+      "amount_due": 2990,
+      "amount_paid": 2990,
+      "currency": "brl",
+      "created": 1794531194,
+      "period_start": 1794531194,
+      "period_end": 1794531194,
+      "billing_reason": "subscription_create"
+    },
+    {
+      "id": "in_1Ub8lNFTfV9EeZEHOHBfc193",
+      "number": "MOVJ6QJT-0002",
+      "status": "paid",
+      "amount_due": 2990,
+      "amount_paid": 2990,
+      "currency": "brl",
+      "created": 1797123194,
+      "period_start": 1794531194,
+      "period_end": 1797123194,
+      "billing_reason": "subscription_cycle"
+    },
+    {
+      "id": "in_1Ub8lsFTfV9EeZEH8oQ4ezAm",
+      "number": "MOVJ6QJT-0003",
+      "status": "paid",
+      "amount_due": 2990,
+      "amount_paid": 2990,
+      "currency": "brl",
+      "created": 1799801594,
+      "period_start": 1797123194,
+      "period_end": 1799801594,
+      "billing_reason": "subscription_cycle"
+    },
+    {
+      "id": "in_1Ub8mWFTfV9EeZEHICdoo7F0",
+      "number": "MOVJ6QJT-0004",
+      "status": "open",
+      "amount_due": 2990,
+      "amount_paid": 0,
+      "currency": "brl",
+      "created": 1802479994,
+      "period_start": 1799801594,
+      "period_end": 1802479994,
+      "billing_reason": "subscription_cycle",
+      "failure": "Sem meio de pagamento anexado (default_payment_method removido)."
+    }
+  ],
+  "events": [
+    {
+      "id": "evt_1Ub8kfFTfV9EeZEH0jhrfRmr",
+      "type": "customer.subscription.created",
+      "object": "sub_1Ub8kdFTfV9EeZEHoD19F2hs",
+      "status": "active",
+      "created": 1794531241
+    },
+    {
+      "id": "evt_1Ub8kfFTfV9EeZEHtBC0r1Io",
+      "type": "invoice.paid",
+      "object": "in_1Ub8kdFTfV9EeZEHCQ9nsnjx",
+      "status": "paid",
+      "created": 1794531241
+    },
+    {
+      "id": "evt_1Ub8lSFTfV9EeZEH9Uqy8016",
+      "type": "invoice.paid",
+      "object": "in_1Ub8lNFTfV9EeZEHOHBfc193",
+      "status": "paid",
+      "created": 1794531289
+    },
+    {
+      "id": "evt_1Ub8lxFTfV9EeZEHtOV4qEeQ",
+      "type": "invoice.paid",
+      "object": "in_1Ub8lsFTfV9EeZEH8oQ4ezAm",
+      "status": "paid",
+      "created": 1794531321
+    },
+    {
+      "id": "evt_1Ub8mdFTfV9EeZEHhj64jS65",
+      "type": "invoice.payment_failed",
+      "object": "in_1Ub8mWFTfV9EeZEHICdoo7F0",
+      "status": "open",
+      "created": 1794531360
+    },
+    {
+      "id": "evt_1Ub8mnFTfV9EeZEHXNNvYA7I",
+      "type": "invoice.payment_failed",
+      "object": "in_1Ub8mWFTfV9EeZEHICdoo7F0",
+      "status": "open",
+      "created": 1794531372
+    },
+    {
+      "id": "evt_1Ub8n8FTfV9EeZEHBHZSpDAu",
+      "type": "checkout.session.expired",
+      "object": "cs_test_a0Ug3MfRySYDSVTWzsn55v3bsGmuFdRX236UKcG8UxkaenrGjku1LpcXkF",
+      "status": "expired",
+      "created": 1794531394
+    },
+    {
+      "id": "evt_1Ub8npFTfV9EeZEHQmcCsg3V",
+      "type": "customer.subscription.updated",
+      "object": "sub_1Ub8kdFTfV9EeZEHoD19F2hs",
+      "status": "past_due",
+      "created": 1794531437,
+      "note": "Evento posterior ao change-plan; status já estava past_due."
+    }
+  ],
+  "validated": [
+    "Conta em test mode, país BR e moeda BRL.",
+    "Criação de Product/Price mensal em BRL para os quatro planos, com lookup_key.",
+    "Criação de Customer vinculado a test clock.",
+    "Criação de Checkout Session mode=subscription com payment_method_types=[card].",
+    "Expiração de Checkout Session e evento checkout.session.expired.",
+    "Assinatura ativa com cartão de teste e primeira invoice paga.",
+    "Renovação automática em dois ciclos adicionais, com novo invoice.paid e avanço de período.",
+    "Falha de cobrança com invoice.payment_failed e assinatura em past_due.",
+    "Sessão do Customer Portal gerada.",
+    "cancel_at_period_end alternando true/false com cancel_at preenchido/limpo.",
+    "Upgrade Starter -> Pro com proration_behavior=none, sem invoice imediata.",
+    "Payload de invoice.payment_failed sem caminhos de dados de cartão (PAN/CVV/validade).",
+    "Verificação local da assinatura do webhook (HMAC-SHA256): assinatura válida aceita, payload alterado e segredo errado rejeitados.",
+    "Recepção real de eventos via `stripe listen --forward-to`: `checkout.session.completed` e `invoice.paid` entregues uma vez cada, com `Stripe-Signature` válida sobre o raw body.",
+    "`client_reference_id` sobrevive ao payload do `checkout.session.completed`, permitindo correlacionar a sessão com a assinatura local."
+  ],
+  "notValidated": [
+    "Checkout `mode=subscription` pago em browser: o fixture do CLI só cria `mode=payment` e a conta bloqueia raw card data. A ativação de assinatura foi provada por criação direta via API.",
+    "Ordem entre `checkout.session.completed` e `invoice.paid` em um checkout real de assinatura.",
+    "Cobrança real: charges_enabled=false até concluir onboarding da conta."
+  ],
+  "findings": [
+    "current_period_start/end não existem no topo da Subscription nesta versão da API; vêm de subscription.items.data[0].",
+    "invoice.subscription não é confiável; usar invoice.parent.subscription_details.subscription.",
+    "invoice.payment_intent pode ser null em cobranças de assinatura nesta conta.",
+    "billing_mode.type = classic, então cancel_at_period_end é o controle correto.",
+    "POST /v1/payment_methods rejeita números de cartão crus nesta conta; tokens de teste (tok_visa) funcionam.",
+    "tok_chargeDeclined falha na criação do PaymentMethod; a falha de cobrança foi simulada removendo os meios de pagamento antes da renovação.",
+    "Com proration_behavior=none, upgrade troca o Price e não gera invoice imediata; a diferença entra no próximo ciclo."
+  ]
+}
