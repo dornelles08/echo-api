@@ -42,6 +42,12 @@ export class DrizzlePlanRepository implements PlanRepository {
     return row ? PlanMapper.toDomain(row) : null;
   }
 
+  async findByCode(code: string): Promise<Plan | null> {
+    const [row] = await db.select().from(plans).where(eq(plans.code, code)).limit(1);
+
+    return row ? PlanMapper.toDomain(row) : null;
+  }
+
   async create(plan: Plan): Promise<void> {
     await db.insert(plans).values(PlanMapper.toPersistence(plan));
   }

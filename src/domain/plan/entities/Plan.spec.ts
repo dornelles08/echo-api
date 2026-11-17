@@ -6,6 +6,7 @@ const baseProps = {
   name: "Free",
   description: "Ideal para testar",
   price: 0,
+  priceCents: 0,
   monthlyMinutesLimit: 30,
   allowVideoUpload: false,
   audioRetentionDays: 7,
@@ -32,6 +33,9 @@ describe("Plan entity", () => {
     expect(plan.name).toBe("Free");
     expect(plan.description).toBe("Ideal para testar");
     expect(plan.price).toBe(0);
+    expect(plan.priceCents).toBe(0);
+    expect(plan.currency).toBe("BRL");
+    expect(plan.billingInterval).toBe("month");
     expect(plan.monthlyMinutesLimit).toBe(30);
     expect(plan.allowVideoUpload).toBe(false);
     expect(plan.audioRetentionDays).toBe(7);

@@ -14,6 +14,10 @@ export class InMemoryPlanRepository implements PlanRepository {
       result = result.filter((plan) => plan.name === filter.name);
     }
 
+    if (filter?.code) {
+      result = result.filter((plan) => plan.code === filter.code);
+    }
+
     return [...result].sort((a, b) => a.monthlyMinutesLimit - b.monthlyMinutesLimit);
   }
 
@@ -23,6 +27,10 @@ export class InMemoryPlanRepository implements PlanRepository {
 
   async findByName(name: string): Promise<Plan | null> {
     return this.items.find((plan) => plan.name === name) || null;
+  }
+
+  async findByCode(code: string): Promise<Plan | null> {
+    return this.items.find((plan) => plan.code === code) || null;
   }
 
   async create(plan: Plan): Promise<void> {
