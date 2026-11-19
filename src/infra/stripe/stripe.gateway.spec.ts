@@ -76,7 +76,10 @@ describe("StripeGateway", () => {
         email: "test@example.com",
       });
 
-      expect(result.customerId).toBe("cus_123");
+      expect(result.isRight()).toBe(true);
+      if (result.isRight()) {
+        expect(result.value.customerId).toBe("cus_123");
+      }
       expect(client.customers.create).toHaveBeenCalledWith(
         {
           email: "test@example.com",
@@ -103,7 +106,10 @@ describe("StripeGateway", () => {
         email: "test@example.com",
       });
 
-      expect(result.customerId).toBe("cus_existing");
+      expect(result.isRight()).toBe(true);
+      if (result.isRight()) {
+        expect(result.value.customerId).toBe("cus_existing");
+      }
       expect(client.customers.create).not.toHaveBeenCalled();
     });
   });
@@ -131,8 +137,11 @@ describe("StripeGateway", () => {
         cancelUrl: "https://echo.app/cancel",
       });
 
-      expect(result.checkoutUrl).toBe("https://checkout.stripe.com/sessions/cs_123");
-      expect(result.checkoutSessionId).toBe("cs_123");
+      expect(result.isRight()).toBe(true);
+      if (result.isRight()) {
+        expect(result.value.checkoutUrl).toBe("https://checkout.stripe.com/sessions/cs_123");
+        expect(result.value.checkoutSessionId).toBe("cs_123");
+      }
       expect(client.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           mode: "subscription",
@@ -158,15 +167,18 @@ describe("StripeGateway", () => {
       mockGetStripeClient.mockReturnValue(client);
 
       const gateway = new StripeGateway();
-      await expect(
-        gateway.createCheckoutSession({
-          customerId: "cus_123",
-          priceId: "price_123",
-          clientReferenceId: "sub_123",
-          successUrl: "https://echo.app/success",
-          cancelUrl: "https://echo.app/cancel",
-        }),
-      ).rejects.toThrow(BillingGatewayError);
+      const result = await gateway.createCheckoutSession({
+        customerId: "cus_123",
+        priceId: "price_123",
+        clientReferenceId: "sub_123",
+        successUrl: "https://echo.app/success",
+        cancelUrl: "https://echo.app/cancel",
+      });
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(BillingGatewayError);
+      }
     });
   });
 
@@ -353,15 +365,18 @@ describe("StripeGateway", () => {
       mockGetStripeClient.mockReturnValue(client);
 
       const gateway = new StripeGateway();
-      await expect(
-        gateway.createCheckoutSession({
-          customerId: "cus_123",
-          priceId: "price_123",
-          clientReferenceId: "sub_123",
-          successUrl: "https://echo.app/success",
-          cancelUrl: "https://echo.app/cancel",
-        }),
-      ).rejects.toThrow(PaymentCardError);
+      const result = await gateway.createCheckoutSession({
+        customerId: "cus_123",
+        priceId: "price_123",
+        clientReferenceId: "sub_123",
+        successUrl: "https://echo.app/success",
+        cancelUrl: "https://echo.app/cancel",
+      });
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(PaymentCardError);
+      }
     });
 
     it("should map StripeRateLimitError to BillingRateLimitError", async () => {
@@ -378,9 +393,15 @@ describe("StripeGateway", () => {
       mockGetStripeClient.mockReturnValue(client);
 
       const gateway = new StripeGateway();
-      await expect(
-        gateway.createCustomer({ userId: "user-1", email: "test@example.com" }),
-      ).rejects.toThrow(BillingRateLimitError);
+      const result = await gateway.createCustomer({
+        userId: "user-1",
+        email: "test@example.com",
+      });
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(BillingRateLimitError);
+      }
     });
 
     it("should map StripeConnectionError to BillingConnectionError", async () => {
@@ -397,9 +418,15 @@ describe("StripeGateway", () => {
       mockGetStripeClient.mockReturnValue(client);
 
       const gateway = new StripeGateway();
-      await expect(
-        gateway.createCustomer({ userId: "user-1", email: "test@example.com" }),
-      ).rejects.toThrow(BillingConnectionError);
+      const result = await gateway.createCustomer({
+        userId: "user-1",
+        email: "test@example.com",
+      });
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(BillingConnectionError);
+      }
     });
 
     it("should map generic StripeError to BillingGatewayError", async () => {
@@ -416,9 +443,15 @@ describe("StripeGateway", () => {
       mockGetStripeClient.mockReturnValue(client);
 
       const gateway = new StripeGateway();
-      await expect(
-        gateway.createCustomer({ userId: "user-1", email: "test@example.com" }),
-      ).rejects.toThrow(BillingGatewayError);
+      const result = await gateway.createCustomer({
+        userId: "user-1",
+        email: "test@example.com",
+      });
+
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft()) {
+        expect(result.value).toBeInstanceOf(BillingGatewayError);
+      }
     });
   });
 });

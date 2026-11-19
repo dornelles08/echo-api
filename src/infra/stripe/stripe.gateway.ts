@@ -1,10 +1,12 @@
 import Stripe from "stripe";
+import type { Either } from "../../domain/either";
 import {
   BillingConnectionError,
   BillingGatewayError,
   BillingRateLimitError,
   PaymentCardError,
 } from "../../domain/billing/use-cases/errors";
+import type { BillingGateway } from "../../domain/billing/gateways/billing-gateway.port";
 import { env } from "../env";
 import { createLogger } from "../libs/logger";
 import { getStripeClient } from "./stripe.client";
@@ -181,90 +183,108 @@ export type ConstructWebhookEventInput = {
 export type ConstructWebhookEventOutput = Stripe.Event;
 
 export class StripeGateway {
-  async createCustomer(input: CreateCustomerInput): Promise<CreateCustomerOutput> {
-    return stripeCall(
-      "createCustomer",
-      async (requestOptions) => {
-        const existing = await getStripeClient().customers.list({
-          email: input.email ?? undefined,
-          limit: 1,
-        });
+  async createCustomer(
+    input: CreateCustomerInput,
+  ): Promise<Either<Error, CreateCustomerOutput>> {
+    try {
+      return await stripeCall(
+        "createCustomer",
+        async (requestOptions) => {
+          const existing = await getStripeClient().customers.list({
+            email: input.email ?? undefined,
+            limit: 1,
+          });
 
-        const customerByEmail = existing.data.find((c) => c.metadata.userId === input.userId);
-
-        if (customerByEmail) {
-          logger.info(
-            { customerId: customerByEmail.id, userId: input.userId },
-            "Stripe customer already exists, reusing",
+          const customerByEmail = existing.data.find(
+            (c) => c.metadata.userId === input.userId,
           );
-          return { customerId: customerByEmail.id };
-        }
 
-        const customer = await getStripeClient().customers.create(
-          {
-            email: input.email,
-            metadata: {
-              userId: input.userId,
-              ...input.metadata,
+          if (customerByEmail) {
+            logger.info(
+              {
+                customerId: customerByEmail.id,
+                userId: input.userId,
+              },
+              "Stripe customer already exists, reusing",
+            );
+            return { customerId: customerByEmail.id };
+          }
+
+          const customer = await getStripeClient().customers.create(
+            {
+              email: input.email,
+              metadata: {
+                userId: input.userId,
+                ...input.metadata,
+              },
             },
-          },
-          requestOptions,
-        );
+            requestOptions,
+          );
 
-        logger.info({ customerId: customer.id, userId: input.userId }, "Stripe customer created");
+          logger.info(
+            { customerId: customer.id, userId: input.userId },
+            "Stripe customer created",
+          );
 
-        return { customerId: customer.id };
-      },
-      `customer:${input.userId}`,
-    );
+          return { customerId: customer.id };
+        },
+        `customer:${input.userId}`,
+      );
+    } catch (error) {
+      return left(error as Error);
+    }
   }
 
   async createCheckoutSession(
     input: CreateCheckoutSessionInput,
-  ): Promise<CreateCheckoutSessionOutput> {
-    return stripeCall(
-      "createCheckoutSession",
-      async (requestOptions) => {
-        const session = await getStripeClient().checkout.sessions.create(
-          {
-            mode: "subscription",
-            payment_method_types: ["card"],
-            customer: input.customerId,
-            client_reference_id: input.clientReferenceId,
-            line_items: [
-              {
-                price: input.priceId,
-                quantity: 1,
-              },
-            ],
-            success_url: input.successUrl,
-            cancel_url: input.cancelUrl,
-            metadata: input.metadata,
-          },
-          requestOptions,
-        );
+  ): Promise<Either<Error, CreateCheckoutSessionOutput>> {
+    try {
+      return await stripeCall(
+        "createCheckoutSession",
+        async (requestOptions) => {
+          const session = await getStripeClient().checkout.sessions.create(
+            {
+              mode: "subscription",
+              payment_method_types: ["card"],
+              customer: input.customerId,
+              client_reference_id: input.clientReferenceId,
+              line_items: [
+                {
+                  price: input.priceId,
+                  quantity: 1,
+                },
+              ],
+              success_url: input.successUrl,
+              cancel_url: input.cancelUrl,
+              metadata: input.metadata,
+            },
+            requestOptions,
+          );
 
-        const checkoutUrl = session.url;
-        if (!checkoutUrl) {
-          throw new BillingGatewayError("Checkout session returned no URL");
-        }
+          const checkoutUrl = session.url;
+          if (!checkoutUrl) {
+            throw new BillingGatewayError("Checkout session returned no URL");
+          }
 
-        logger.info(
-          {
+          logger.info(
+            {
+              checkoutSessionId: session.id,
+              customerId: input.customerId,
+              clientReferenceId: input.clientReferenceId,
+            },
+            "Stripe checkout session created",
+          );
+
+          return {
+            checkoutUrl,
             checkoutSessionId: session.id,
-            customerId: input.customerId,
-            clientReferenceId: input.clientReferenceId,
-          },
-          "Stripe checkout session created",
-        );
-
-        return {
-          checkoutUrl,
-          checkoutSessionId: session.id,
-        };
-      },
-      `checkout:${input.clientReferenceId}`,
-    );
+          };
+        },
+        `checkout:${input.clientReferenceId}`,
+      );
+    } catch (error) {
+      return left(error as Error);
+    }
   }
 
   async createSubscription(input: CreateSubscriptionInput): Promise<CreateSubscriptionOutput> {
@@ -297,39 +317,51 @@ export class StripeGateway {
     );
   }
 
-  async updateSubscription(input: UpdateSubscriptionInput): Promise<UpdateSubscriptionOutput> {
-    return stripeCall(
-      "updateSubscription",
-      async (requestOptions) => {
-        const subscription = await getStripeClient().subscriptions.update(
-          input.subscriptionId,
-          {
-            items: [
+  async updateSubscription(
+    input: UpdateSubscriptionInput,
+  ): Promise<Either<Error, UpdateSubscriptionOutput>> {
+    try {
+      return await stripeCall(
+        "updateSubscription",
+        async (requestOptions) => {
+          const updateData: Record<string, unknown> = {
+            cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
+            metadata: input.metadata,
+          };
+
+          if (input.priceId) {
+            updateData["items"] = [
               {
                 id: input.subscriptionId,
                 price: input.priceId,
               },
-            ],
-            proration_behavior: input.prorationBehavior,
-            cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
-            metadata: input.metadata,
-          },
-          requestOptions,
-        );
+            ];
+            updateData["proration_behavior"] =
+              input.prorationBehavior ?? "none";
+          }
 
-        logger.info(
-          {
-            subscriptionId: subscription.id,
-            status: subscription.status,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          },
-          "Stripe subscription updated",
-        );
+          const subscription = await getStripeClient().subscriptions.update(
+            input.subscriptionId,
+            updateData,
+            requestOptions,
+          );
 
-        return { subscriptionId: subscription.id };
-      },
-      `subscription:${input.subscriptionId}:update`,
-    );
+          logger.info(
+            {
+              subscriptionId: subscription.id,
+              status: subscription.status,
+              cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            },
+            "Stripe subscription updated",
+          );
+
+          return { subscriptionId: subscription.id };
+        },
+        `subscription:${input.subscriptionId}:update`,
+      );
+    } catch (error) {
+      return left(error as Error);
+    }
   }
 
   async cancelSubscription(input: CancelSubscriptionInput): Promise<CancelSubscriptionOutput> {
@@ -358,30 +390,36 @@ export class StripeGateway {
     );
   }
 
-  async createPortalSession(input: CreatePortalSessionInput): Promise<CreatePortalSessionOutput> {
-    return stripeCall(
-      "createPortalSession",
-      async (requestOptions) => {
-        const portalSession = await getStripeClient().billingPortal.sessions.create(
-          {
-            customer: input.customerId,
-            return_url: input.returnUrl,
-          },
-          requestOptions,
-        );
+  async createPortalSession(
+    input: CreatePortalSessionInput,
+  ): Promise<Either<Error, CreatePortalSessionOutput>> {
+    try {
+      return await stripeCall(
+        "createPortalSession",
+        async (requestOptions) => {
+          const portalSession = await getStripeClient().billingPortal.sessions.create(
+            {
+              customer: input.customerId,
+              return_url: input.returnUrl,
+            },
+            requestOptions,
+          );
 
-        logger.info(
-          {
-            customerId: input.customerId,
-            portalSessionId: portalSession.id,
-          },
-          "Stripe portal session created",
-        );
+          logger.info(
+            {
+              customerId: input.customerId,
+              portalSessionId: portalSession.id,
+            },
+            "Stripe portal session created",
+          );
 
-        return { portalUrl: portalSession.url };
-      },
-      `portal:${input.customerId}`,
-    );
+          return { portalUrl: portalSession.url };
+        },
+        `portal:${input.customerId}`,
+      );
+    } catch (error) {
+      return left(error as Error);
+    }
   }
 
   async constructWebhookEvent(
