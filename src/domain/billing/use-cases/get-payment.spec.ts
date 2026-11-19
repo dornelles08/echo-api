@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import { Payment } from "../../entities/Payment";
+import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import { Payment } from "../entities/Payment";
 import { GetPaymentUseCase } from "./get-payment";
 
 class FakePaymentRepository {

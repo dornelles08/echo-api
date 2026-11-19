@@ -41,13 +41,13 @@ export class CancelSubscriptionUseCase {
     }
 
     // 3. Definir cancel_at_period_end=true no Stripe.
-    try {
-      await this.billingGateway.updateSubscription({
-        subscriptionId: subscription.providerSubscriptionId,
-        cancelAtPeriodEnd: true,
-      });
-    } catch (error) {
-      return left(error as Error);
+    const cancelResult = await this.billingGateway.updateSubscription({
+      subscriptionId: subscription.providerSubscriptionId,
+      cancelAtPeriodEnd: true,
+    });
+
+    if (cancelResult.isLeft()) {
+      return left(cancelResult.value);
     }
 
     // 4. Atualizar status local.

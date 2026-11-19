@@ -45,13 +45,13 @@ export class ReactivateSubscriptionUseCase {
     }
 
     // 3. Definir cancel_at_period_end=false no Stripe.
-    try {
-      await this.billingGateway.updateSubscription({
-        subscriptionId: subscription.providerSubscriptionId,
-        cancelAtPeriodEnd: false,
-      });
-    } catch (error) {
-      return left(error as Error);
+    const reactivateResult = await this.billingGateway.updateSubscription({
+      subscriptionId: subscription.providerSubscriptionId,
+      cancelAtPeriodEnd: false,
+    });
+
+    if (reactivateResult.isLeft()) {
+      return left(reactivateResult.value);
     }
 
     // 4. Atualizar status local.

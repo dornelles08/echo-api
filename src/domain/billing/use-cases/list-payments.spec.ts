@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Payment } from "../../entities/Payment";
+import { Payment } from "../entities";
 import { ListPaymentsUseCase } from "./list-payments";
 
 class FakePaymentRepository {

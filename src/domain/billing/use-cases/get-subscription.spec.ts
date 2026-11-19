@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import { Plan } from "../../entities/Plan";
-import { Subscription } from "../../entities/Subscription";
+import { Plan } from "../../plan/entities/Plan";
+import { Subscription } from "../entities/Subscription";
 import { GetSubscriptionUseCase } from "./get-subscription";
 
 class FakeSubscriptionRepository {

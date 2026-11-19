@@ -62,14 +62,14 @@ export class ChangeSubscriptionPlanUseCase {
 
     if (isUpgrade) {
       // Upgrade: imediato, proration_behavior = none, preço novo no próximo ciclo.
-      try {
-        await this.billingGateway.updateSubscription({
-          subscriptionId: subscription.providerSubscriptionId,
-          priceId: targetPlan.stripePriceId ?? "",
-          prorationBehavior: "none",
-        });
-      } catch (error) {
-        return left(error as Error);
+      const upgradeResult = await this.billingGateway.updateSubscription({
+        subscriptionId: subscription.providerSubscriptionId,
+        priceId: targetPlan.stripePriceId ?? "",
+        prorationBehavior: "none",
+      });
+
+      if (upgradeResult.isLeft()) {
+        return left(upgradeResult.value);
       }
 
       // Atualizar plano efetivo e snapshot local.

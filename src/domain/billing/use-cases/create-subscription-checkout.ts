@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { type Either, left, right } from "../../either";
-import { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
 import { InvalidPlanError } from "../use-cases/errors/invalid-plan.error";
 import { SubscriptionAlreadyActiveError } from "../use-cases/errors/subscription-already-active.error";
 import type { Plan } from "../..";

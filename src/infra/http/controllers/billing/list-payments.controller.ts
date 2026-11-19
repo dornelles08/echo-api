@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
+import { listPaymentsQuerySchema } from "../../../../contracts";
 import { makeListPaymentsUseCase } from "../../../factories/billing/list-payments.factory";
 import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 import { PaymentPresenter } from "../../presenters/billing/payment.presenter";
@@ -7,8 +8,7 @@ import { PaymentPresenter } from "../../presenters/billing/payment.presenter";
 export async function listPayments(request: FastifyRequest, reply: FastifyReply) {
   const { sub: userId } = request.user;
 
-  const page = request.query.page ? Number(request.query.page) : 1;
-  const perPage = request.query.perPage ? Number(request.query.perPage) : 20;
+  const { page, perPage } = listPaymentsQuerySchema.parse(request.query);
 
   const result = await makeListPaymentsUseCase().execute({
     userId,
