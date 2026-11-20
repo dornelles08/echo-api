@@ -1,10 +1,11 @@
 // Domain barrel
 
+// Domain modules
+export * from "./billing";
 // Shared kernel
 export * from "./core";
 export * from "./either";
 export * from "./errors";
-// Domain modules
 export * from "./file";
 export * from "./media";
 export * from "./plan";

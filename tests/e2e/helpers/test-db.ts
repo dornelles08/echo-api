@@ -30,16 +30,18 @@ export async function resetTestDb(): Promise<void> {
   for (const plan of plansSeed) {
     await sql`
       INSERT INTO plans (
-        name, description, price, monthly_minutes_limit, allow_video_upload,
+        code, name, description, price, price_cents, currency, billing_interval,
+        monthly_minutes_limit, allow_video_upload,
         audio_retention_days, video_retention_days, max_summary_attempts_per_media,
         is_active
       )
       VALUES (
-        ${plan.name}, ${plan.description}, ${plan.price}, ${plan.monthlyMinutesLimit},
+        ${plan.code}, ${plan.name}, ${plan.description}, ${plan.price}, ${plan.priceCents},
+        ${plan.currency}, ${plan.billingInterval}, ${plan.monthlyMinutesLimit},
         ${plan.allowVideoUpload}, ${plan.audioRetentionDays}, ${plan.videoRetentionDays},
         ${plan.maxSummaryAttemptsPerMedia}, ${plan.isActive}
       )
-      ON CONFLICT (name) DO NOTHING
+      ON CONFLICT (code) DO NOTHING
     `;
   }
 

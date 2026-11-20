@@ -8,6 +8,7 @@ export function makePlanFactory(overrides: Partial<PlanProps> = {}, id?: string)
       name: faker.company.name(),
       description: faker.lorem.sentence(),
       price: faker.number.int({ min: 0, max: 200 }) ?? 0,
+      priceCents: (faker.number.int({ min: 0, max: 200 }) ?? 0) * 100,
       monthlyMinutesLimit: faker.number.int({ min: 10, max: 100 }) ?? 30,
       allowVideoUpload: faker.helpers.arrayElement([true, false]),
       audioRetentionDays: faker.number.int({ min: 1, max: 30 }) ?? 7,

@@ -13,9 +13,11 @@ import traceIdMiddleware from "./infra/http/middlewares/trace-id.middleware";
 import { authRoutes } from "./infra/http/routes/auth.routes";
 import { authLogoutRoutes } from "./infra/http/routes/auth-logout.route";
 import { authProvidersRoutes } from "./infra/http/routes/auth-providers.route";
+import { billingRoutes } from "./infra/http/routes/billing.routes";
 import { fileRoutes } from "./infra/http/routes/file.routes";
 import { mediaRoutes } from "./infra/http/routes/media.routes";
 import { planRoutes } from "./infra/http/routes/plan.routes";
+import { stripeWebhookRoutes } from "./infra/http/routes/stripe-webhook.route";
 import { summaryTemplateRoutes } from "./infra/http/routes/summary-template.routes";
 import { tagRoutes } from "./infra/http/routes/tag.routes";
 import { userRoutes } from "./infra/http/routes/user.routes";
@@ -86,6 +88,8 @@ export async function buildApp() {
   await app.register(tagRoutes, { prefix: "/tags" });
   await app.register(summaryTemplateRoutes);
   await app.register(planRoutes, { prefix: "/plans" });
+  await app.register(stripeWebhookRoutes);
+  await app.register(billingRoutes);
 
   app.get("/health", async () => {
     const report = await checkHealth();

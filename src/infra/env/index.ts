@@ -41,6 +41,14 @@ const envSchema = z.object({
     .transform((v) => v === "true"),
   MINIO_REGION: z.string().default("us-east-1"),
 
+  // Stripe (assinaturas — fase 2).
+  // Obrigatório em produção, opcional em dev/test.
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_PUBLIC_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
+  STRIPE_API_VERSION: z.string().optional(),
+
   SENTRY_DSN: z.string().default(""),
   SENTRY_DSN_API: z.string().default(""),
   LOKI_URL: z.string().default("http://localhost:3100"),
