@@ -1,12 +1,26 @@
 import { describe, expect, it } from "vitest";
 
-import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import { EntityNotFoundError } from "../../errors/entity-not-found.error";
 import { Payment } from "../entities/Payment";
 import { GetPaymentUseCase } from "./get-payment";
 
 class FakePaymentRepository {
-  async findById(_id: string, _userId: string) {
+  payments: Payment[] = [];
+
+  async upsert(_payment: Payment) {
+    // noop
+  }
+
+  async findByProviderInvoiceId(_id: string) {
     return null;
+  }
+
+  async findById(_id: string, _userId: string): Promise<Payment | null> {
+    return null;
+  }
+
+  async listByUserId(_userId: string, _pagination?: { page?: number; perPage?: number }) {
+    return { payments: [], total: 0 };
   }
 }
 
@@ -25,7 +39,7 @@ describe("GetPaymentUseCase", () => {
     });
 
     const paymentRepository = new FakePaymentRepository();
-    paymentRepository.findById = async () => payment;
+    paymentRepository.findById = async (_id: string, _userId: string) => payment;
 
     const sut = new GetPaymentUseCase(paymentRepository);
 

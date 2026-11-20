@@ -1,16 +1,15 @@
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import type { Subscription } from "../entities";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
+import { Subscription } from "../entities";
 import type { BillingGateway } from "../gateways/billing-gateway.port";
+import type { SubscriptionRepository } from "../repositories/subscription.repository";
 
 interface ReactivateSubscriptionRequest {
   userId: string;
 }
 
 type ReactivateSubscriptionResponse = Either<
-  | EntityNotFoundError
-  | Error,
+  EntityNotFoundError | Error,
   { subscriptionId: string; status: string; cancelAtPeriodEnd: boolean }
 >;
 
@@ -24,8 +23,7 @@ export class ReactivateSubscriptionUseCase {
     userId,
   }: ReactivateSubscriptionRequest): Promise<ReactivateSubscriptionResponse> {
     // 1. Buscar assinatura viva do usuário.
-    const subscription =
-      await this.subscriptionRepository.findLiveByUserId(userId);
+    const subscription = await this.subscriptionRepository.findLiveByUserId(userId);
 
     if (!subscription) {
       return left(new EntityNotFoundError("Subscription"));
@@ -33,15 +31,11 @@ export class ReactivateSubscriptionUseCase {
 
     // 2. Permitir apenas se houver cancelamento agendado e ainda não passou do período.
     if (!subscription.cancelAtPeriodEnd) {
-      return left(
-        new Error("Não há cancelamento agendado para reativar"),
-      );
+      return left(new Error("Não há cancelamento agendado para reativar"));
     }
 
     if (new Date() >= subscription.currentPeriodEnd) {
-      return left(
-        new Error("Não é possível reativar após o fim do período"),
-      );
+      return left(new Error("Não é possível reativar após o fim do período"));
     }
 
     // 3. Definir cancel_at_period_end=false no Stripe.
@@ -73,7 +67,7 @@ export class ReactivateSubscriptionUseCase {
           currentPeriodStart: subscription.currentPeriodStart,
           currentPeriodEnd: subscription.currentPeriodEnd,
           cancelAtPeriodEnd: false,
-          canceledAt: null,
+          canceledAt: undefined,
           scheduledPlanId: subscription.scheduledPlanId,
           scheduledChangeAt: subscription.scheduledChangeAt,
           hostedCheckoutUrl: subscription.hostedCheckoutUrl,

@@ -1,12 +1,13 @@
 import Stripe from "stripe";
-import type { Either } from "../../domain/either";
+import type { BillingGateway } from "../../domain/billing/gateways/billing-gateway.port";
 import {
   BillingConnectionError,
   BillingGatewayError,
   BillingRateLimitError,
   PaymentCardError,
 } from "../../domain/billing/use-cases/errors";
-import type { BillingGateway } from "../../domain/billing/gateways/billing-gateway.port";
+import type { Either } from "../../domain/either";
+import { left, right } from "../../domain/either";
 import { env } from "../env";
 import { createLogger } from "../libs/logger";
 import { getStripeClient } from "./stripe.client";
@@ -183,9 +184,7 @@ export type ConstructWebhookEventInput = {
 export type ConstructWebhookEventOutput = Stripe.Event;
 
 export class StripeGateway {
-  async createCustomer(
-    input: CreateCustomerInput,
-  ): Promise<Either<Error, CreateCustomerOutput>> {
+  async createCustomer(input: CreateCustomerInput): Promise<Either<Error, CreateCustomerOutput>> {
     try {
       return await stripeCall(
         "createCustomer",
@@ -195,9 +194,7 @@ export class StripeGateway {
             limit: 1,
           });
 
-          const customerByEmail = existing.data.find(
-            (c) => c.metadata.userId === input.userId,
-          );
+          const customerByEmail = existing.data.find((c) => c.metadata.userId === input.userId);
 
           if (customerByEmail) {
             logger.info(
@@ -207,7 +204,7 @@ export class StripeGateway {
               },
               "Stripe customer already exists, reusing",
             );
-            return { customerId: customerByEmail.id };
+            return right({ customerId: customerByEmail.id });
           }
 
           const customer = await getStripeClient().customers.create(
@@ -221,12 +218,9 @@ export class StripeGateway {
             requestOptions,
           );
 
-          logger.info(
-            { customerId: customer.id, userId: input.userId },
-            "Stripe customer created",
-          );
+          logger.info({ customerId: customer.id, userId: input.userId }, "Stripe customer created");
 
-          return { customerId: customer.id };
+          return right({ customerId: customer.id });
         },
         `customer:${input.userId}`,
       );
@@ -275,10 +269,10 @@ export class StripeGateway {
             "Stripe checkout session created",
           );
 
-          return {
+          return right({
             checkoutUrl,
             checkoutSessionId: session.id,
-          };
+          });
         },
         `checkout:${input.clientReferenceId}`,
       );
@@ -336,8 +330,7 @@ export class StripeGateway {
                 price: input.priceId,
               },
             ];
-            updateData["proration_behavior"] =
-              input.prorationBehavior ?? "none";
+            updateData["proration_behavior"] = input.prorationBehavior ?? "none";
           }
 
           const subscription = await getStripeClient().subscriptions.update(
@@ -355,7 +348,7 @@ export class StripeGateway {
             "Stripe subscription updated",
           );
 
-          return { subscriptionId: subscription.id };
+          return right({ subscriptionId: subscription.id });
         },
         `subscription:${input.subscriptionId}:update`,
       );
@@ -413,7 +406,7 @@ export class StripeGateway {
             "Stripe portal session created",
           );
 
-          return { portalUrl: portalSession.url };
+          return right({ portalUrl: portalSession.url });
         },
         `portal:${input.customerId}`,
       );

@@ -4,10 +4,7 @@ import { changePlanBodySchema } from "../../../../contracts";
 import { makeChangeSubscriptionPlanUseCase } from "../../../factories/billing/change-subscription-plan.factory";
 import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
-export async function changeSubscriptionPlan(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function changeSubscriptionPlan(request: FastifyRequest, reply: FastifyReply) {
   const { sub: userId } = request.user;
 
   const { planId } = changePlanBodySchema.parse(request.body);

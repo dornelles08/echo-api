@@ -46,14 +46,10 @@ export interface CreatePortalSessionOutput {
 }
 
 export interface BillingGateway {
-  createCustomer(
-    input: CreateCustomerInput,
-  ): Promise<Either<Error, CreateCustomerOutput>>;
+  createCustomer(input: CreateCustomerInput): Promise<Either<Error, CreateCustomerOutput>>;
   createCheckoutSession(
     input: CreateCheckoutSessionInput,
-  ): Promise<
-    Either<Error, CreateCheckoutSessionOutput>
-  >;
+  ): Promise<Either<Error, CreateCheckoutSessionOutput>>;
   updateSubscription(
     input: UpdateSubscriptionInput,
   ): Promise<Either<Error, UpdateSubscriptionOutput>>;

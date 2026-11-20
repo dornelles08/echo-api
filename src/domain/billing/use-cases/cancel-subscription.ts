@@ -1,16 +1,15 @@
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import type { Subscription } from "../entities";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
+import { Subscription } from "../entities";
 import type { BillingGateway } from "../gateways/billing-gateway.port";
+import type { SubscriptionRepository } from "../repositories/subscription.repository";
 
 interface CancelSubscriptionRequest {
   userId: string;
 }
 
 type CancelSubscriptionResponse = Either<
-  | EntityNotFoundError
-  | Error,
+  EntityNotFoundError | Error,
   { subscriptionId: string; status: string; cancelAtPeriodEnd: boolean }
 >;
 
@@ -20,12 +19,9 @@ export class CancelSubscriptionUseCase {
     private readonly billingGateway: BillingGateway,
   ) {}
 
-  async execute({
-    userId,
-  }: CancelSubscriptionRequest): Promise<CancelSubscriptionResponse> {
+  async execute({ userId }: CancelSubscriptionRequest): Promise<CancelSubscriptionResponse> {
     // 1. Buscar assinatura viva do usuário.
-    const subscription =
-      await this.subscriptionRepository.findLiveByUserId(userId);
+    const subscription = await this.subscriptionRepository.findLiveByUserId(userId);
 
     if (!subscription) {
       return left(new EntityNotFoundError("Subscription"));

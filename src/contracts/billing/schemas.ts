@@ -6,11 +6,11 @@ export type GetSubscriptionQuery = z.infer<typeof getSubscriptionQuerySchema>;
 
 export const checkoutSubscriptionBodySchema = z.object({
   planId: z.string().uuid(),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url(),
 });
 
-export type CheckoutSubscriptionBody = z.infer<
-  typeof checkoutSubscriptionBodySchema
->;
+export type CheckoutSubscriptionBody = z.infer<typeof checkoutSubscriptionBodySchema>;
 
 export const changePlanBodySchema = z.object({
   planId: z.string().uuid(),
@@ -24,9 +24,7 @@ export type CancelSubscriptionBody = z.infer<typeof cancelSubscriptionBodySchema
 
 export const reactivateSubscriptionBodySchema = z.object({});
 
-export type ReactivateSubscriptionBody = z.infer<
-  typeof reactivateSubscriptionBodySchema
->;
+export type ReactivateSubscriptionBody = z.infer<typeof reactivateSubscriptionBodySchema>;
 
 export const listPaymentsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -45,6 +43,4 @@ export const paymentMethodChangeBodySchema = z.object({
   returnUrl: z.string().url(),
 });
 
-export type PaymentMethodChangeBody = z.infer<
-  typeof paymentMethodChangeBodySchema
->;
+export type PaymentMethodChangeBody = z.infer<typeof paymentMethodChangeBodySchema>;

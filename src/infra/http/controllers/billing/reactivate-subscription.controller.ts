@@ -4,10 +4,7 @@ import { reactivateSubscriptionBodySchema } from "../../../../contracts";
 import { makeReactivateSubscriptionUseCase } from "../../../factories/billing/reactivate-subscription.factory";
 import { handleUseCaseError } from "../../handlers/handle-use-case-error";
 
-export async function reactivateSubscription(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function reactivateSubscription(request: FastifyRequest, reply: FastifyReply) {
   const { sub: userId } = request.user;
 
   const result = await makeReactivateSubscriptionUseCase().execute({ userId });

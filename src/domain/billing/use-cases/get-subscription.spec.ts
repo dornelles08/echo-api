@@ -1,24 +1,85 @@
 import { describe, expect, it } from "vitest";
 
 import { Plan } from "../../plan/entities/Plan";
+import type { BillingCustomer } from "../entities/BillingCustomer";
 import { Subscription } from "../entities/Subscription";
 import { GetSubscriptionUseCase } from "./get-subscription";
 
 class FakeSubscriptionRepository {
   live: Subscription | null = null;
 
+  async findByUserId(_userId: string) {
+    return [];
+  }
+
+  async findByProviderSubscriptionId(_id: string) {
+    return null;
+  }
+
   async findLiveByUserId(_userId: string) {
     return this.live;
   }
+
+  async create(_subscription: Subscription) {
+    // noop
+  }
+
+  async update(_subscription: Subscription) {
+    // noop
+  }
+
+  async attachProviderData(
+    _userId: string,
+    _providerCustomerId: string,
+    _providerSubscriptionId: string,
+  ) {
+    // noop
+  }
 }
 
-class FakeBillingCustomerRepository {}
+class FakeBillingCustomerRepository {
+  async findByUserId(_userId: string) {
+    return null;
+  }
+
+  async findByProviderCustomerId(_provider: string, _providerCustomerId: string) {
+    return null;
+  }
+
+  async create(_billingCustomer: BillingCustomer) {
+    // noop
+  }
+
+  async update(_billingCustomer: BillingCustomer) {
+    // noop
+  }
+
+  async attachProviderData(_userId: string, _provider: string, _providerCustomerId: string) {
+    // noop
+  }
+}
 
 class FakePlanRepository {
   plan: Plan | null = null;
 
+  async findAll(_filter?: { isActive?: boolean; name?: string; code?: string }) {
+    return this.plan ? [this.plan] : [];
+  }
+
   async findById(_id: string) {
     return this.plan;
+  }
+
+  async findByName(_name: string) {
+    return null;
+  }
+
+  async findByCode(_code: string) {
+    return null;
+  }
+
+  async create(_plan: Plan) {
+    // noop
   }
 }
 

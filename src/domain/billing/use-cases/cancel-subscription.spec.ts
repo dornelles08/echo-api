@@ -1,24 +1,70 @@
 import { describe, expect, it } from "vitest";
-
-import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import type { Either } from "../../either";
+import { right } from "../../either";
+import { EntityNotFoundError } from "../../errors/entity-not-found.error";
 import { Subscription } from "../entities/Subscription";
+import type {
+  CreateCheckoutSessionOutput,
+  CreateCustomerOutput,
+  CreatePortalSessionOutput,
+  UpdateSubscriptionOutput,
+} from "../gateways/billing-gateway.port";
 import { CancelSubscriptionUseCase } from "./cancel-subscription";
 
 class FakeSubscriptionRepository {
   live: Subscription | null = null;
 
-  async findLiveByUserId(_userId: string) {
+  async findByUserId(_userId: string): Promise<Subscription[]> {
+    return [];
+  }
+
+  async findByProviderSubscriptionId(
+    _providerSubscriptionId: string,
+  ): Promise<Subscription | null> {
+    return null;
+  }
+
+  async findLiveByUserId(_userId: string): Promise<Subscription | null> {
     return this.live;
   }
 
-  async update(_subscription: Subscription) {
+  async create(_subscription: Subscription): Promise<void> {
+    // noop
+  }
+
+  async update(_subscription: Subscription): Promise<void> {
+    // noop
+  }
+
+  async attachProviderData(
+    _userId: string,
+    _providerCustomerId: string,
+    _providerSubscriptionId: string,
+  ): Promise<void> {
     // noop
   }
 }
 
 class FakeBillingGateway {
-  async updateSubscription() {
-    return { isRight: () => true, value: { subscriptionId: "sub_123" } };
+  async createCustomer(): Promise<Either<Error, CreateCustomerOutput>> {
+    return right({ customerId: "cus_123" });
+  }
+
+  async createCheckoutSession(): Promise<Either<Error, CreateCheckoutSessionOutput>> {
+    return right({
+      checkoutUrl: "https://checkout.stripe.com/session/cs_123",
+      checkoutSessionId: "cs_123",
+    });
+  }
+
+  async updateSubscription(): Promise<Either<Error, UpdateSubscriptionOutput>> {
+    return right({ subscriptionId: "sub_123" });
+  }
+
+  async createPortalSession(): Promise<Either<Error, CreatePortalSessionOutput>> {
+    return right({
+      portalUrl: "https://billing.stripe.com/session/bps_123",
+    });
   }
 }
 
@@ -44,10 +90,7 @@ describe("CancelSubscriptionUseCase", () => {
     const subscriptionRepository = new FakeSubscriptionRepository();
     subscriptionRepository.live = subscription;
 
-    const sut = new CancelSubscriptionUseCase(
-      subscriptionRepository,
-      new FakeBillingGateway(),
-    );
+    const sut = new CancelSubscriptionUseCase(subscriptionRepository, new FakeBillingGateway());
 
     const result = await sut.execute({ userId: "user-1" });
 
@@ -80,10 +123,7 @@ describe("CancelSubscriptionUseCase", () => {
     const subscriptionRepository = new FakeSubscriptionRepository();
     subscriptionRepository.live = subscription;
 
-    const sut = new CancelSubscriptionUseCase(
-      subscriptionRepository,
-      new FakeBillingGateway(),
-    );
+    const sut = new CancelSubscriptionUseCase(subscriptionRepository, new FakeBillingGateway());
 
     const result = await sut.execute({ userId: "user-1" });
 
@@ -97,10 +137,7 @@ describe("CancelSubscriptionUseCase", () => {
     const subscriptionRepository = new FakeSubscriptionRepository();
     subscriptionRepository.live = null;
 
-    const sut = new CancelSubscriptionUseCase(
-      subscriptionRepository,
-      new FakeBillingGateway(),
-    );
+    const sut = new CancelSubscriptionUseCase(subscriptionRepository, new FakeBillingGateway());
 
     const result = await sut.execute({ userId: "user-1" });
 

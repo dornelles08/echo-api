@@ -1,16 +1,14 @@
 import { randomUUID } from "node:crypto";
+import type { Plan } from "../..";
 import { type Either, left, right } from "../../either";
 import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import type { PlanRepository } from "../../plan/repositories/plan.repository";
+import { Subscription } from "../entities";
+import type { BillingGateway } from "../gateways/billing-gateway.port";
+import type { BillingCustomerRepository } from "../repositories/billing-customer.repository";
+import type { SubscriptionRepository } from "../repositories/subscription.repository";
 import { InvalidPlanError } from "../use-cases/errors/invalid-plan.error";
 import { SubscriptionAlreadyActiveError } from "../use-cases/errors/subscription-already-active.error";
-import type { Plan } from "../..";
-import type { Subscription } from "../entities";
-import type {
-  BillingCustomerRepository,
-} from "../repositories/billing-customer.repository";
-import type { PlanRepository } from "../repositories";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
-import type { BillingGateway } from "../gateways/billing-gateway.port";
 
 interface CreateSubscriptionCheckoutRequest {
   userId: string;
@@ -20,10 +18,7 @@ interface CreateSubscriptionCheckoutRequest {
 }
 
 type CreateSubscriptionCheckoutResponse = Either<
-  | EntityNotFoundError
-  | InvalidPlanError
-  | SubscriptionAlreadyActiveError
-  | Error,
+  EntityNotFoundError | InvalidPlanError | SubscriptionAlreadyActiveError | Error,
   { checkoutUrl: string; subscriptionId: string; status: string }
 >;
 
@@ -49,8 +44,7 @@ export class CreateSubscriptionCheckoutUseCase {
     }
 
     // 2. Bloquear se já existir assinatura viva.
-    const liveSubscription =
-      await this.subscriptionRepository.findLiveByUserId(userId);
+    const liveSubscription = await this.subscriptionRepository.findLiveByUserId(userId);
 
     if (liveSubscription) {
       return left(new SubscriptionAlreadyActiveError());
@@ -116,9 +110,9 @@ export class CreateSubscriptionCheckoutUseCase {
       planId: plan.id,
       planCode: plan.code ?? "",
       planName: plan.name,
-      priceCents: plan.priceCents,
-      currency: plan.currency,
-      billingInterval: plan.billingInterval,
+      priceCents: plan.priceCents ?? 0,
+      currency: plan.currency ?? "BRL",
+      billingInterval: plan.billingInterval ?? "month",
       status: "PENDING",
       billingType: "scheduled",
       currentPeriodStart: now,

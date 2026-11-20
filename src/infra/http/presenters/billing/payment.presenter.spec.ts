@@ -5,17 +5,20 @@ import { PaymentPresenter } from "./payment.presenter";
 
 describe("PaymentPresenter", () => {
   it("should present payment", () => {
-    const payment = Payment.create({
-      userId: "user-1",
-      providerInvoiceId: "in_123",
-      number: "INV-001",
-      amountDueCents: 2990,
-      amountPaidCents: 2990,
-      currency: "BRL",
-      status: "paid",
-      periodStart: new Date(),
-      periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    }, "payment-1");
+    const payment = Payment.create(
+      {
+        userId: "user-1",
+        providerInvoiceId: "in_123",
+        number: "INV-001",
+        amountDueCents: 2990,
+        amountPaidCents: 2990,
+        currency: "BRL",
+        status: "paid",
+        periodStart: new Date(),
+        periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+      "payment-1",
+    );
 
     const result = PaymentPresenter.toHTTP(payment);
 
@@ -42,6 +45,6 @@ describe("PaymentPresenter", () => {
     const result = PaymentPresenter.toHTTPList([payment]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe(payment.id);
+    expect(result[0]!.id).toBe(payment.id);
   });
 });

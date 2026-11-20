@@ -1,17 +1,14 @@
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import type { BillingCustomerRepository } from "../repositories/billing-customer.repository";
 import type { BillingGateway } from "../gateways/billing-gateway.port";
+import type { BillingCustomerRepository } from "../repositories/billing-customer.repository";
 
 interface CreatePortalSessionRequest {
   userId: string;
   returnUrl: string;
 }
 
-type CreatePortalSessionResponse = Either<
-  EntityNotFoundError | Error,
-  { portalUrl: string }
->;
+type CreatePortalSessionResponse = Either<EntityNotFoundError | Error, { portalUrl: string }>;
 
 export class CreatePortalSessionUseCase {
   constructor(
@@ -24,8 +21,7 @@ export class CreatePortalSessionUseCase {
     returnUrl,
   }: CreatePortalSessionRequest): Promise<CreatePortalSessionResponse> {
     // 1. Buscar customer do Stripe para este usuário.
-    const billingCustomer =
-      await this.billingCustomerRepository.findByUserId(userId);
+    const billingCustomer = await this.billingCustomerRepository.findByUserId(userId);
 
     if (!billingCustomer) {
       return left(new EntityNotFoundError("BillingCustomer"));

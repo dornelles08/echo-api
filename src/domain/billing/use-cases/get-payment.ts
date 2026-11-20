@@ -13,10 +13,7 @@ type GetPaymentResponse = Either<EntityNotFoundError, Payment>;
 export class GetPaymentUseCase {
   constructor(private readonly paymentRepository: PaymentRepository) {}
 
-  async execute({
-    paymentId,
-    userId,
-  }: GetPaymentRequest): Promise<GetPaymentResponse> {
+  async execute({ paymentId, userId }: GetPaymentRequest): Promise<GetPaymentResponse> {
     const payment = await this.paymentRepository.findById(paymentId, userId);
 
     if (!payment) {

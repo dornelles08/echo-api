@@ -1,11 +1,9 @@
-import { type Either, left, right } from "../../either";
-import { EntityNotFoundError } from "../../errors/entity-not-found.error";
 import type { Plan } from "../..";
+import { type Either, left, right } from "../../either";
+import type { EntityNotFoundError } from "../../errors/entity-not-found.error";
+import type { PlanRepository } from "../../plan/repositories/plan.repository";
 import type { Subscription } from "../entities";
-import type {
-  BillingCustomerRepository,
-} from "../repositories/billing-customer.repository";
-import type { PlanRepository } from "../repositories";
+import type { BillingCustomerRepository } from "../repositories/billing-customer.repository";
 import type { SubscriptionRepository } from "../repositories/subscription.repository";
 
 interface GetSubscriptionUseCaseRequest {
@@ -30,9 +28,7 @@ export class GetSubscriptionUseCase {
   async execute({
     userId,
   }: GetSubscriptionUseCaseRequest): Promise<GetSubscriptionUseCaseResponse> {
-    const subscription = await this.subscriptionRepository.findLiveByUserId(
-      userId,
-    );
+    const subscription = await this.subscriptionRepository.findLiveByUserId(userId);
 
     if (!subscription) {
       return right({ subscription: null, plan: null });

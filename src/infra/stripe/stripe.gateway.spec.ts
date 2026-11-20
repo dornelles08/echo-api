@@ -235,7 +235,10 @@ describe("StripeGateway", () => {
         prorationBehavior: "none",
       });
 
-      expect(result.subscriptionId).toBe("sub_123");
+      expect(result.isRight()).toBe(true);
+      if (result.isRight()) {
+        expect(result.value.subscriptionId).toBe("sub_123");
+      }
       expect(client.subscriptions.update).toHaveBeenCalledWith(
         "sub_123",
         {
@@ -321,7 +324,10 @@ describe("StripeGateway", () => {
         returnUrl: "https://echo.app/account",
       });
 
-      expect(result.portalUrl).toBe("https://billing.stripe.com/session/bps_123");
+      expect(result.isRight()).toBe(true);
+      if (result.isRight()) {
+        expect(result.value.portalUrl).toBe("https://billing.stripe.com/session/bps_123");
+      }
     });
   });
 

@@ -6,6 +6,18 @@ import { ListPaymentsUseCase } from "./list-payments";
 class FakePaymentRepository {
   payments: Payment[] = [];
 
+  async upsert(_payment: Payment) {
+    // noop
+  }
+
+  async findByProviderInvoiceId(_id: string) {
+    return null;
+  }
+
+  async findById(_id: string, _userId: string) {
+    return null;
+  }
+
   async listByUserId(_userId: string, _pagination?: { page?: number; perPage?: number }) {
     return { payments: this.payments, total: this.payments.length };
   }

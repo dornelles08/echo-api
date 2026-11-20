@@ -1,7 +1,7 @@
 import { type Either, right } from "../../either";
+import type { PaginationParams } from "../../repositories/pagination-params";
 import type { Payment } from "../entities";
 import type { PaymentRepository } from "../repositories/payment.repository";
-import type { PaginationParams } from "../../repositories/pagination-params";
 
 interface ListPaymentsRequest {
   userId: string;
@@ -9,10 +9,7 @@ interface ListPaymentsRequest {
   perPage?: number;
 }
 
-type ListPaymentsResponse = Either<
-  null,
-  { payments: Payment[]; total: number }
->;
+type ListPaymentsResponse = Either<null, { payments: Payment[]; total: number }>;
 
 export class ListPaymentsUseCase {
   constructor(private readonly paymentRepository: PaymentRepository) {}

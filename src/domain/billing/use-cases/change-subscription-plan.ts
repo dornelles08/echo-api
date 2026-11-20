@@ -1,13 +1,11 @@
+import type { Plan } from "../..";
 import { type Either, left, right } from "../../either";
 import { EntityNotFoundError } from "../../errors/entity-not-found.error";
-import type { Plan } from "../..";
-import type { Subscription } from "../entities";
-import type {
-  BillingCustomerRepository,
-} from "../repositories/billing-customer.repository";
-import type { PlanRepository } from "../repositories";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
+import type { PlanRepository } from "../../plan/repositories/plan.repository";
+import { Subscription } from "../entities";
 import type { BillingGateway } from "../gateways/billing-gateway.port";
+import type { BillingCustomerRepository } from "../repositories/billing-customer.repository";
+import type { SubscriptionRepository } from "../repositories/subscription.repository";
 
 interface ChangeSubscriptionPlanRequest {
   userId: string;
@@ -15,8 +13,7 @@ interface ChangeSubscriptionPlanRequest {
 }
 
 type ChangeSubscriptionPlanResponse = Either<
-  | EntityNotFoundError
-  | Error,
+  EntityNotFoundError | Error,
   { subscriptionId: string; status: string; scheduled: boolean }
 >;
 
@@ -40,8 +37,7 @@ export class ChangeSubscriptionPlanUseCase {
     }
 
     // 2. Buscar assinatura viva do usuário.
-    const subscription =
-      await this.subscriptionRepository.findLiveByUserId(userId);
+    const subscription = await this.subscriptionRepository.findLiveByUserId(userId);
 
     if (!subscription) {
       return left(new EntityNotFoundError("Subscription"));
@@ -53,12 +49,9 @@ export class ChangeSubscriptionPlanUseCase {
     }
 
     // 4. Determinar se é upgrade ou downgrade com base no preço.
-    const currentPlan = await this.planRepository.findById(
-      subscription.planId,
-    );
+    const currentPlan = await this.planRepository.findById(subscription.planId);
 
-    const isUpgrade =
-      targetPlan.priceCents > (currentPlan?.priceCents ?? 0);
+    const isUpgrade = (targetPlan.priceCents ?? 0) > (currentPlan?.priceCents ?? 0);
 
     if (isUpgrade) {
       // Upgrade: imediato, proration_behavior = none, preço novo no próximo ciclo.
@@ -85,9 +78,9 @@ export class ChangeSubscriptionPlanUseCase {
             planId: targetPlan.id,
             planCode: targetPlan.code ?? "",
             planName: targetPlan.name,
-            priceCents: targetPlan.priceCents,
-            currency: targetPlan.currency,
-            billingInterval: targetPlan.billingInterval,
+            priceCents: targetPlan.priceCents ?? 0,
+            currency: targetPlan.currency ?? "BRL",
+            billingInterval: targetPlan.billingInterval ?? "month",
             status: subscription.status,
             billingType: subscription.billingType,
             currentPeriodStart: subscription.currentPeriodStart,
