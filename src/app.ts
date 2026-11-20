@@ -20,11 +20,12 @@ import { summaryTemplateRoutes } from "./infra/http/routes/summary-template.rout
 import { tagRoutes } from "./infra/http/routes/tag.routes";
 import { userRoutes } from "./infra/http/routes/user.routes";
 import { checkHealth } from "./infra/libs/health";
+import { createLogger } from "./infra/libs/logger";
 import { isSentryEnabled } from "./infra/libs/sentry";
 
 export async function buildApp() {
   const app = fastify({
-    logger: env.NODE_ENV !== "test",
+    loggerInstance: env.NODE_ENV !== "test" ? createLogger("echo-api") : undefined,
   });
 
   if (isSentryEnabled) {

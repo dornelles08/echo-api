@@ -17,7 +17,7 @@ const traceIdMiddleware: FastifyPluginAsync = async (app) => {
     const traceId = incoming || request.id;
 
     // Garante que o log do Fastify use o mesmo traceId
-    request.log.child = () => request.log.child({ traceId });
+    request.log = request.log.child({ traceId });
 
     // Expõe no header de resposta para rastreamento ponta a ponta
     reply.header(TRACE_ID_HEADER, traceId);
